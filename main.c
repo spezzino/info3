@@ -91,6 +91,7 @@ FSOUND_SAMPLE* powerup1;
 FSOUND_SAMPLE* powerup2;
 FSOUND_SAMPLE* powerup3;
 FSOUND_SAMPLE* powerup4;
+FSOUND_SAMPLE* powerup5;
 FSOUND_SAMPLE* crash;
 FSOUND_SAMPLE* explosion;
 FSOUND_SAMPLE* menu_select;
@@ -105,7 +106,7 @@ void cuadrado(double);
 double posEnLineaRecta(void);
 float distancePointPlane(geoPoint,plane);
 plane planeEquation(geoPoint,geoPoint,geoPoint);
-void square2d(double,double,double);
+void square2d(double,double,double,double);
 void figura(int,double);
 void inicializarExtra(void);
 void drawString(char*,float,float,float);
@@ -275,7 +276,7 @@ void drawGeoPoint(geoPoint p){
      }
 }
 
-void square2d(double x, double y, double z)
+void square2d(double x, double y, double z, double angle)
 {
 
     glEnable(GL_TEXTURE_2D);
@@ -297,16 +298,26 @@ void square2d(double x, double y, double z)
 
     plane p = planeEquation(p1,p2,p3);
     
-    geoPoint p0 = {posX, posY, 0};
-
+   GLfloat angulo_rotZ_radianes = 0.0174532925 * rotZ;
+   GLfloat xRel = posX*cos(angulo_rotZ_radianes) - posY*sin(angulo_rotZ_radianes);
+   GLfloat yRel = posY*cos(angulo_rotZ_radianes) - posX*sin(angulo_rotZ_radianes);
+   
+     geoPoint p0 = {xRel, yRel, 1};
     // SI ES MENOR A 1 OCURRE UNA COLISION
     dist = distancePointPlane(p0,p);
+    if(dist < RADIO_MOVIL){
+       exit(1);
+    }
+    
     glColor3d(1,0,0);
     sprintf(textBuffer, "dist: %.2f",dist);
     drawString(textBuffer, 0,0,5.8);
     
     sprintf(textBuffer, "rotZ: %.2f",rotZ);
     drawString(textBuffer, 0,0,5.0);
+    
+    sprintf(textBuffer, "xRel: %.2f | yRel: %.2f", xRel, yRel);
+    drawString(textBuffer, 0,0,4.2);
 }
 
 void figura(int vertex, double size){
@@ -331,15 +342,13 @@ void figura(int vertex, double size){
     }
     glPushMatrix();
       glRotated(-90, 0,0,1); //cambiar el primer 0 por un rand fijo
-      /*
+      
       for(i=0; i<vertex-1; i++){
         glPushMatrix();
           glRotated(i*angle,0,0,1);
-          square2d(edge*fixer,edge,1);
+          square2d(edge*fixer,edge,1, i*angle);
         glPopMatrix();
       }
-      */
-      square2d(edge*fixer,edge,1);
     glPopMatrix();
 }
 
@@ -424,6 +433,7 @@ void circle2d(double radius)
 
     // Agua
     glColor3ub(119,171,255);
+    glTranslated(0,0,0.1);
     glBindTexture(GL_TEXTURE_2D,agua.ID);
       glBegin(GL_POLYGON);
       float angle, radian, x, y, xcos, ysin, tx, ty; 
@@ -445,6 +455,25 @@ void circle2d(double radius)
       glEnd();
 
     glDisable(GL_TEXTURE_2D);
+
+/*    
+    sprintf(textBuffer, "(2,2)");
+    drawString(textBuffer, 2,2,0.1);
+    sprintf(textBuffer, "(-2,-2)");
+    drawString(textBuffer, -2,-2,0.1);
+    sprintf(textBuffer, "(0,0)");
+    drawString(textBuffer, 0,0,0.1);
+    sprintf(textBuffer, "(2,-2)");
+    drawString(textBuffer, 2,-2,0.1);
+    sprintf(textBuffer, "(-2,2)");
+    drawString(textBuffer, -2,2,0.1);
+    sprintf(textBuffer, "(2,0)");
+    drawString(textBuffer, 2,0,0.1);
+    sprintf(textBuffer, "(0,-2)");
+    drawString(textBuffer, 0,-2,0.1);
+    sprintf(textBuffer, "(-2,0)");
+    drawString(textBuffer, -2,0,0.1);
+*/
 }
 
 
@@ -457,9 +486,10 @@ void init(void)
     powerup2 = FSOUND_Sample_Load(2,"audio/powerup2.wav",0,0,0);
     powerup3 = FSOUND_Sample_Load(3,"audio/powerup3.wav",0,0,0);
     powerup4 = FSOUND_Sample_Load(4,"audio/powerup4.wav",0,0,0);
-    crash = FSOUND_Sample_Load(5,"audio/crash.wav",0,0,0);
-    explosion = FSOUND_Sample_Load(6,"audio/explosion.wav",0,0,0);
-    menu_select = FSOUND_Sample_Load(7,"audio/menu_select.wav",0,0,0);
+    powerup4 = FSOUND_Sample_Load(5,"audio/powerup5.wav",0,0,0);
+    crash = FSOUND_Sample_Load(6,"audio/crash.wav",0,0,0);
+    explosion = FSOUND_Sample_Load(7,"audio/explosion.wav",0,0,0);
+    menu_select = FSOUND_Sample_Load(8,"audio/menu_select.wav",0,0,0);
     
    glClearColor (0.255, 0.784, 0.862, 0.0); // Clear the color
     glShadeModel (GL_FLAT); // Set the shading model to GL_FLAT
@@ -671,16 +701,19 @@ void manejadorExtras(void)
            {
            case 1:
                // Caso rojo, vida extra
+               FSOUND_PlaySound (0,powerup1);
                vidas_jugador++;
                inicializarExtra();
                break;
            case 2:
                // Caso blanco, invensibilidad por 5 segundos
+               FSOUND_PlaySound (0,powerup2);
                invensibilidad = TIEMPO_VALIDEZ_EXTRA_INVENSIBILIDAD;
                bandera_extra_activo = 1;
                break;
            case 3:
                // Caso verde, velocidad movil por 2 por 5 segundos.
+               FSOUND_PlaySound (0,powerup3);
                velocidad_movil *= 2;
                tiempo_extra_activo = TIEMPO_VALIDEZ_EXTRA_VELOCIDAD_MOVIL;
                bandera_extra_activo = 1; // Otorga la vida pero no hay tiempo restante para ese extra.
@@ -688,12 +721,14 @@ void manejadorExtras(void)
            case 4:
                // Caso azul, velocidad muros disminuido por 2
                velocidad_paredes /= 2;
+               FSOUND_PlaySound (0,powerup4);
                // Otorgarle al jugador el extra que comio
                tiempo_extra_activo = TIEMPO_VALIDEZ_EXTRA_VELOCIDAD_MURO;
                bandera_extra_activo = 1; // Otorga la vida pero no hay tiempo restante para ese extra.
                break;
            case 5:
                // Caso rosa, otorgarle 1000 puntos al usuario.
+               FSOUND_PlaySound (0,powerup5);
                puntos_jugador += 1000;
                inicializarExtra();
                break;
@@ -907,29 +942,30 @@ void keyboard (unsigned char key, int x, int y)
 // called on special key pressed
 void specialKey(int key, int x, int y)
 {
+     const double pelr = posEnLineaRecta();
    // Check which key is pressed
    switch(key)
    {
    case GLUT_KEY_LEFT : // Rotate on x axis
-       if ((posEnLineaRecta() < TAM_CUADRILATERO) || (posEnLineaRecta() >= TAM_CUADRILATERO && posX > 0))
+       if ((pelr < TAM_CUADRILATERO) || (pelr >= TAM_CUADRILATERO && posX > 0))
        {
            posX -= 0.1f;
        };
        break;
    case GLUT_KEY_RIGHT : // Rotate on x axis (opposite)
-       if ((posEnLineaRecta() < TAM_CUADRILATERO) || (posEnLineaRecta() >= TAM_CUADRILATERO && posX < 0))
+       if ((pelr < TAM_CUADRILATERO) || (pelr >= TAM_CUADRILATERO && posX < 0))
        {
            posX += 0.1f;
        };
        break;
    case GLUT_KEY_UP : // Rotate on y axis
-       if ((posEnLineaRecta() < TAM_CUADRILATERO) || (posEnLineaRecta() >= TAM_CUADRILATERO && posY < 0))
+       if ((pelr < TAM_CUADRILATERO) || (pelr >= TAM_CUADRILATERO && posY < 0))
        {
            posY += 0.1f;
        };
        break;
    case GLUT_KEY_DOWN : // Rotate on y axis (opposite)
-       if ((posEnLineaRecta() < TAM_CUADRILATERO) || (posEnLineaRecta() >= TAM_CUADRILATERO && posY > 0))
+       if ((pelr < TAM_CUADRILATERO) || (pelr >= TAM_CUADRILATERO && posY > 0))
        {
            posY -= 0.1f;
        };
@@ -997,6 +1033,7 @@ int main(int argc, char** argv)
    FSOUND_Sample_Free (powerup2);
    FSOUND_Sample_Free (powerup3);
    FSOUND_Sample_Free (powerup4);
+   FSOUND_Sample_Free (powerup5);
    FSOUND_Sample_Free (crash);
    FSOUND_Sample_Free (explosion);
    FSOUND_Sample_Free (menu_select);

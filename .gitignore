@@ -17,3 +17,9 @@
 *.app
 
 Thumbs.db
+
+# CodeBlocks
+*.cbp
+LICENSE
+README.md
+Makefile.win

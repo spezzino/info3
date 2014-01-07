@@ -1,0 +1,56 @@
+# depslib dependency file v1.0
+1388963581 source:c:\documents and settings\winxp\desktop\final2\game\main.cpp
+	"include/Globals.h"
+
+1388862597 c:\documents and settings\winxp\desktop\final2\glutmingw32\include\gl\glut.h
+	<windows.h>
+	<stdlib.h>
+	<GL/gl.h>
+	<GL/glu.h>
+
+1079707729 c:\documents and settings\winxp\desktop\final2\fmod\include\fmod\fmod.h
+
+1388961615 c:\documents and settings\winxp\desktop\final2\game\include\object.h
+	"Globals.h"
+
+1388961576 source:c:\documents and settings\winxp\desktop\final2\game\src\object.cpp
+	"Object.h"
+
+1388961658 c:\documents and settings\winxp\desktop\final2\game\include\soundmanager.h
+	"Globals.h"
+
+1388961583 source:c:\documents and settings\winxp\desktop\final2\game\src\soundmanager.cpp
+	"SoundManager.h"
+
+1389132299 c:\documents and settings\winxp\desktop\final2\game\include\globals.h
+	<windows.h>
+	<stdio.h>
+	<iostream>
+	<stdlib.h>
+	<string>
+	<GL/glut.h>
+	<math.h>
+	<time.h>
+	<fmod/fmod.h>
+	"Object.h"
+	"SoundManager.h"
+
+1281661260 c:\documents and settings\winxp\desktop\final2\game\include\freeimage.h
+	<wchar.h>
+	<inttypes.h>
+
+1388962885 c:\documents and settings\winxp\desktop\final2\game\include\texturemanager.h
+	<windows.h>
+	"FreeImage.h"
+	<GL/glut.h>
+	<map>
+	<memory.h>
+
+1388962853 c:\documents and settings\winxp\desktop\final2\game\include\objectloader.h
+	"Globals.h"
+	"TextureManager.h"
+
+1388963523 source:c:\documents and settings\winxp\desktop\final2\game\src\objectloader.cpp
+
+1388963545 source:c:\documents and settings\winxp\desktop\final2\game\src\texturemanager.cpp
+

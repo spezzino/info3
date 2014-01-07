@@ -1,30 +1,8 @@
-#include <windows.h>
-#include <GL/glut.h> // Once you include glut.h (you don't need gl.h or glu.h)
-#include <stdio.h>
-#include <math.h>
-#include <time.h>
-#include <fmod/fmod.h>
+#pragma once
 
-#define PI 3.141592654
-#define TAM_CUADRILATERO 5
-#define MAX_LEVEL 30
-#define RADIO_PELOTA_EXTRA 1
-#define RADIO_MOVIL 1
-#define TIEMPO_APARICION_EXTRA 2500
-#define TIEMPO_VALIDEZ_EXTRA 500
-#define TIEMPO_VALIDEZ_EXTRA_INVENSIBILIDAD 1500
-#define TIEMPO_VALIDEZ_EXTRA_VELOCIDAD_MOVIL 1500
-#define TIEMPO_VALIDEZ_EXTRA_VELOCIDAD_MURO 1500
-#define MAX_VIEW_DISTANCE 35.0
-#define GAME_NAME "OpenGL Game"
+#include "include/Globals.h"
 
-#define POSICION_COL_1 -12
-#define POSICION_COL_2 -2
-#define POSICION_COL_3 8
-#define POSICION_FILA -2
-#define CERCANIA_USUARIO -5
-
-#define DEBUG 1
+using namespace std;
 
 int frameCount = 0; //  The number of frames
 float fps = 0; //  Number of frames per second
@@ -87,14 +65,7 @@ typedef struct
 } textura;
 
 /* AUDIO */
-FSOUND_SAMPLE* powerup1;
-FSOUND_SAMPLE* powerup2;
-FSOUND_SAMPLE* powerup3;
-FSOUND_SAMPLE* powerup4;
-FSOUND_SAMPLE* powerup5;
-FSOUND_SAMPLE* crash;
-FSOUND_SAMPLE* explosion;
-FSOUND_SAMPLE* menu_select;
+SoundManager soundManager;
 
 /* TEXTURAS */
 textura arena;
@@ -130,6 +101,8 @@ int cargarTGA(char *,textura *);
 void loadObj(char *);
 void menu(void);
 void calculateFPS(void);
+double getXrel(double,double,double);
+double getYrel(double,double,double);
 
 int cargarTGA( char *nombre, textura *imagen)
 {
@@ -263,7 +236,7 @@ plane planeEquation(geoPoint p1, geoPoint p2, geoPoint p3)
 
    geoPoint negN = {-n.x, -n.y, -n.z};
 
-   plane p = {negN.x, negN.y, negN.z, (negN.x * -p1.x) + (negN.y * -p1.y) + (negN.z * -p1.z)};   
+   plane p = {negN.x, negN.y, negN.z, (negN.x * -p1.x) + (negN.y * -p1.y) + (negN.z * -p1.z)};
 
    return p;
 }
@@ -289,42 +262,54 @@ void square2d(double x, double y, double z, double angle)
         glTexCoord2f(y,0);glVertex3f(x,y,0);
       glEnd();
     glDisable(GL_TEXTURE_2D);
-    geoPoint p1 = {x,-y,0};
+
+    //cargar los puntos con las coordenadas reales luego de la rotacion
+    geoPoint p1 = {getXrel(x,-y,angle),getYrel(x,-y,angle),0};
     drawGeoPoint(p1);
-    geoPoint p2 = {x,-y,z};
+    geoPoint p2 = {getXrel(x,-y,angle),getYrel(x,-y,angle),z};
     drawGeoPoint(p2);
-    geoPoint p3 = {x,y,z};
+    geoPoint p3 = {getXrel(x,y,angle),getYrel(x,y,angle),z};
     drawGeoPoint(p3);
+    geoPoint p4 = {getXrel(x,y,angle),getYrel(x,y,angle),0};
+    drawGeoPoint(p4);
 
     plane p = planeEquation(p1,p2,p3);
-    
+
    GLfloat angulo_rotZ_radianes = 0.0174532925 * rotZ;
-   GLfloat xRel = posX*cos(angulo_rotZ_radianes) - posY*sin(angulo_rotZ_radianes);
-   GLfloat yRel = posY*cos(angulo_rotZ_radianes) - posX*sin(angulo_rotZ_radianes);
-   
+   GLfloat xRel = getXrel(posX,posY,angulo_rotZ_radianes);
+   GLfloat yRel = getYrel(posX,posY,angulo_rotZ_radianes);
+
      geoPoint p0 = {xRel, yRel, 1};
     // SI ES MENOR A 1 OCURRE UNA COLISION
     dist = distancePointPlane(p0,p);
     if(dist < RADIO_MOVIL){
-       exit(1);
+       //exit(1);
     }
-    
+
     glColor3d(1,0,0);
     sprintf(textBuffer, "dist: %.2f",dist);
     drawString(textBuffer, 0,0,5.8);
-    
-    sprintf(textBuffer, "rotZ: %.2f",rotZ);
+
+    sprintf(textBuffer, "rotZ: %.2f | rot: %.2f",rotZ,angle);
     drawString(textBuffer, 0,0,5.0);
-    
+
     sprintf(textBuffer, "xRel: %.2f | yRel: %.2f", xRel, yRel);
     drawString(textBuffer, 0,0,4.2);
+}
+
+double getXrel(double x, double y, double angle){
+    return (x*cos(angle*0.0174532925) + y*sin(angle*0.0174532925));
+}
+
+double getYrel(double x, double y, double angle){
+    return (-x*sin(angle*0.0174532925) + y*cos(angle*0.0174532925));
 }
 
 void figura(int vertex, double size){
     int i = 0;
     double angle = 360 / vertex;
     double edge = size*4/vertex;
-    
+
     double fixer = 1;
     switch(vertex){
         case 5:
@@ -341,14 +326,15 @@ void figura(int vertex, double size){
              break;
     }
     glPushMatrix();
-      glRotated(-90, 0,0,1); //cambiar el primer 0 por un rand fijo
-      
-      for(i=0; i<vertex-1; i++){
+      //glRotated(-90, 0,0,1); //cambiar el primer 0 por un rand fijo
+
+      //for(i=0; i<vertex-1; i++){
         glPushMatrix();
+          i=1;
           glRotated(i*angle,0,0,1);
-          square2d(edge*fixer,edge,1, i*angle);
+          square2d(edge*fixer,edge,1,i*angle);
         glPopMatrix();
-      }
+      //}
     glPopMatrix();
 }
 
@@ -436,27 +422,27 @@ void circle2d(double radius)
     glTranslated(0,0,0.1);
     glBindTexture(GL_TEXTURE_2D,agua.ID);
       glBegin(GL_POLYGON);
-      float angle, radian, x, y, xcos, ysin, tx, ty; 
-        for (angle=0.0; angle<360.0; angle+=2.0)
+      float angle, radian, x, y, xcos, ysin, tx, ty;
+        for (angle=0.0; angle<360.0; angle+=15.0)
         {
           radian = angle * (PI/180.0f);
-          
+
           xcos = (float)cos(radian);
           ysin = (float)sin(radian);
           x = xcos * TAM_CUADRILATERO;
           y = ysin * TAM_CUADRILATERO;
           tx = xcos * 0.5 + 0.5;
           ty = ysin * 0.5 + 0.5;
-          
+
           glTexCoord2f(tx, ty);
           glVertex2f(x, y);
         }
-  
+
       glEnd();
 
     glDisable(GL_TEXTURE_2D);
 
-/*    
+
     sprintf(textBuffer, "(2,2)");
     drawString(textBuffer, 2,2,0.1);
     sprintf(textBuffer, "(-2,-2)");
@@ -469,32 +455,37 @@ void circle2d(double radius)
     drawString(textBuffer, -2,2,0.1);
     sprintf(textBuffer, "(2,0)");
     drawString(textBuffer, 2,0,0.1);
+    sprintf(textBuffer, "(0,2)");
+    drawString(textBuffer, 0,2,0.1);
     sprintf(textBuffer, "(0,-2)");
     drawString(textBuffer, 0,-2,0.1);
     sprintf(textBuffer, "(-2,0)");
     drawString(textBuffer, -2,0,0.1);
-*/
+    sprintf(textBuffer, "(-4,-4)");
+    drawString(textBuffer, -4,-4,0.1);
+    sprintf(textBuffer, "(-4,4)");
+    drawString(textBuffer, -4,4,0.1);
+    sprintf(textBuffer, "(4,4)");
+    drawString(textBuffer, 4,4,0.1);
+    sprintf(textBuffer, "(4,-4)");
+    drawString(textBuffer, 4,-4,0.1);
+
 }
 
 
 // Initialize the OpenGL window
 void init(void)
 {
-     
-    FSOUND_Init (44100, 8, 0); //sample ratio, channels
-    powerup1 = FSOUND_Sample_Load(1,"audio/powerup1.wav",0,0,0); //channel, file
-    powerup2 = FSOUND_Sample_Load(2,"audio/powerup2.wav",0,0,0);
-    powerup3 = FSOUND_Sample_Load(3,"audio/powerup3.wav",0,0,0);
-    powerup4 = FSOUND_Sample_Load(4,"audio/powerup4.wav",0,0,0);
-    powerup4 = FSOUND_Sample_Load(5,"audio/powerup5.wav",0,0,0);
-    crash = FSOUND_Sample_Load(6,"audio/crash.wav",0,0,0);
-    explosion = FSOUND_Sample_Load(7,"audio/explosion.wav",0,0,0);
-    menu_select = FSOUND_Sample_Load(8,"audio/menu_select.wav",0,0,0);
-    
+
+
+
    glClearColor (0.255, 0.784, 0.862, 0.0); // Clear the color
+
     glShadeModel (GL_FLAT); // Set the shading model to GL_FLAT
+
     glEnable (GL_LINE_SMOOTH);
     glHint(GL_LINE_SMOOTH_HINT, GL_NICEST); // Set Line Antialiasing
+
     glClearDepth(1.0f);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
@@ -516,6 +507,7 @@ void init(void)
         exit(0); // Cargamos la textura y chequeamos por errores
     }
 }
+
 
 void pelotitasExtrasAnimacion(double t)
 {
@@ -701,19 +693,19 @@ void manejadorExtras(void)
            {
            case 1:
                // Caso rojo, vida extra
-               FSOUND_PlaySound (0,powerup1);
+               soundManager.playPowerUp1Sound();
                vidas_jugador++;
                inicializarExtra();
                break;
            case 2:
                // Caso blanco, invensibilidad por 5 segundos
-               FSOUND_PlaySound (0,powerup2);
+               soundManager.playPowerUp2Sound();
                invensibilidad = TIEMPO_VALIDEZ_EXTRA_INVENSIBILIDAD;
                bandera_extra_activo = 1;
                break;
            case 3:
                // Caso verde, velocidad movil por 2 por 5 segundos.
-               FSOUND_PlaySound (0,powerup3);
+               soundManager.playPowerUp3Sound();
                velocidad_movil *= 2;
                tiempo_extra_activo = TIEMPO_VALIDEZ_EXTRA_VELOCIDAD_MOVIL;
                bandera_extra_activo = 1; // Otorga la vida pero no hay tiempo restante para ese extra.
@@ -721,14 +713,14 @@ void manejadorExtras(void)
            case 4:
                // Caso azul, velocidad muros disminuido por 2
                velocidad_paredes /= 2;
-               FSOUND_PlaySound (0,powerup4);
+               soundManager.playPowerUp4Sound();
                // Otorgarle al jugador el extra que comio
                tiempo_extra_activo = TIEMPO_VALIDEZ_EXTRA_VELOCIDAD_MURO;
                bandera_extra_activo = 1; // Otorga la vida pero no hay tiempo restante para ese extra.
                break;
            case 5:
                // Caso rosa, otorgarle 1000 puntos al usuario.
-               FSOUND_PlaySound (0,powerup5);
+               soundManager.playPowerUp5Sound();
                puntos_jugador += 1000;
                inicializarExtra();
                break;
@@ -813,16 +805,16 @@ void dibujarNave(double t)
 
    // nave
    glPushMatrix();
-   
+
      if(DEBUG){
         glColor3f(1,1,1);
         sprintf(textBuffer, "(%.2f,%.2f,0)",posX,posY);
         drawString(textBuffer, posX, posY, 2);
      }
-     
+
      glColor3d(1,0,0);
      glTranslated(posX,posY,1);
-     
+
      glutSolidSphere(RADIO_MOVIL,20,2);
      if (bandera_extra_activo == 1)
      {
@@ -856,7 +848,7 @@ void display(void)
    const double a = 15 - ((int)k%15) - (k-floor(k)); //oscilador de 15 segundos (el primer entero es la frecuencia)
 
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-   
+
    if(DEBUG){
       sprintf(textBuffer, "FPS: %4.2f", fps);
       drawString(textBuffer, 0,0,6.8);
@@ -865,27 +857,27 @@ void display(void)
    if(show_menu == 0){ //modo juego
 
      reducirAnguloEntre0y360();
-  
+
      glPushMatrix();
        glRotatef(rotZ,0.0,0.0,1.0);
        if(DEBUG){
            dibujarEjesCoordenadas();
        }
        circle2d(TAM_CUADRILATERO);
-       
+
        glColor3d(1,1,1);
        //figura(7,10);
        glColor3d(0.5,0.5,0.5);
        figura(4,4);
-         
-     
+
+
      glPopMatrix();
-  
+
      dibujarNave(t);
      manejadorExtras();
      tableroUsuario(k,t,a);
    }else{ //modo menu
-     menu();    
+     menu();
    }
    glutSwapBuffers();
 }
@@ -992,22 +984,22 @@ void calculateFPS()
 {
     //  Increase frame count
     frameCount++;
- 
+
     //  Get the number of milliseconds since glutInit called
     //  (or first call to glutGet(GLUT ELAPSED TIME)).
     currentTime = glutGet(GLUT_ELAPSED_TIME);
- 
+
     //  Calculate time passed
     int timeInterval = currentTime - previousTime;
- 
+
     if(timeInterval > 1000)
     {
         //  calculate the number of frames per second
         fps = frameCount / (timeInterval / 1000.0f);
- 
+
         //  Set time
         previousTime = currentTime;
- 
+
         //  Reset frame count
         frameCount = 0;
     }
@@ -1015,11 +1007,11 @@ void calculateFPS()
 
 // Main entry point of the program
 int main(int argc, char** argv)
-{           
+{
    glutInit(&argc, argv);
     glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB ); // Setup display mode to double buffer and RGB color
     glutInitWindowSize (800,600); // Set the screen size
-    glutInitWindowPosition(0, 0); // Posicion de la ventana
+    glutInitWindowPosition(70, 70); // Posicion de la ventana
     glutCreateWindow(GAME_NAME);
     init ();
     glutReshapeFunc(reshape);
@@ -1028,16 +1020,8 @@ int main(int argc, char** argv)
     glutSpecialFunc(specialKey); // set window's to specialKey callback
     glutIdleFunc(idle);
     glutMainLoop();
-   
-   FSOUND_Sample_Free (powerup1);
-   FSOUND_Sample_Free (powerup2);
-   FSOUND_Sample_Free (powerup3);
-   FSOUND_Sample_Free (powerup4);
-   FSOUND_Sample_Free (powerup5);
-   FSOUND_Sample_Free (crash);
-   FSOUND_Sample_Free (explosion);
-   FSOUND_Sample_Free (menu_select);
-   FSOUND_Close();
-   
-   return 0;
+
+
+
+   return EXIT_SUCCESS;
 }

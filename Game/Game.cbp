@@ -14,6 +14,7 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-g" />
+					<Add directory="include" />
 				</Compiler>
 			</Target>
 			<Target title="Release">
@@ -24,6 +25,7 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-O2" />
+					<Add directory="include" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
@@ -40,9 +42,13 @@
 			<Add library="glu32" />
 			<Add library="winmm" />
 			<Add library="gdi32" />
+			<Add library="..\fmod\lib\libfmod.a" />
 			<Add directory="C:/Documents and Settings/winxp/Desktop/final2/GLUTMingw32/lib" />
 		</Linker>
+		<Unit filename="include/Globals.h" />
+		<Unit filename="include/SoundManager.h" />
 		<Unit filename="main.cpp" />
+		<Unit filename="src/SoundManager.cpp" />
 		<Extensions>
 			<code_completion />
 			<envvars />

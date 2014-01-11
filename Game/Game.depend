@@ -1,8 +1,8 @@
 # depslib dependency file v1.0
-1388963581 source:c:\documents and settings\winxp\desktop\final2\game\main.cpp
+1389469167 source:c:\documents and settings\winxp\desktop\final2\game\main.cpp
 	"include/Globals.h"
 
-1388862597 c:\documents and settings\winxp\desktop\final2\glutmingw32\include\gl\glut.h
+983712780 c:\documents and settings\winxp\desktop\final2\glutmingw32\include\gl\glut.h
 	<windows.h>
 	<stdlib.h>
 	<GL/gl.h>
@@ -10,19 +10,19 @@
 
 1079707729 c:\documents and settings\winxp\desktop\final2\fmod\include\fmod\fmod.h
 
-1388961615 c:\documents and settings\winxp\desktop\final2\game\include\object.h
+1389469167 c:\documents and settings\winxp\desktop\final2\game\include\object.h
 	"Globals.h"
 
 1388961576 source:c:\documents and settings\winxp\desktop\final2\game\src\object.cpp
 	"Object.h"
 
-1388961658 c:\documents and settings\winxp\desktop\final2\game\include\soundmanager.h
-	"Globals.h"
+1389469739 c:\documents and settings\winxp\desktop\final2\game\include\soundmanager.h
+	<fmod/fmod.h>
 
-1388961583 source:c:\documents and settings\winxp\desktop\final2\game\src\soundmanager.cpp
+1389469667 source:c:\documents and settings\winxp\desktop\final2\game\src\soundmanager.cpp
 	"SoundManager.h"
 
-1389132299 c:\documents and settings\winxp\desktop\final2\game\include\globals.h
+1389469716 c:\documents and settings\winxp\desktop\final2\game\include\globals.h
 	<windows.h>
 	<stdio.h>
 	<iostream>
@@ -32,7 +32,6 @@
 	<math.h>
 	<time.h>
 	<fmod/fmod.h>
-	"Object.h"
 	"SoundManager.h"
 
 1281661260 c:\documents and settings\winxp\desktop\final2\game\include\freeimage.h

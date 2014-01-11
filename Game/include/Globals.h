@@ -1,8 +1,6 @@
 #ifndef GLOBALS_H_INCLUDED
 #define GLOBALS_H_INCLUDED
 
-#pragma once
-
 #define DEBUG 1
 
 #include <windows.h>
@@ -17,7 +15,6 @@
 
 using namespace std;
 
-#include "Object.h"
 #include "SoundManager.h"
 
 #define PI 3.141592654

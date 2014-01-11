@@ -1,8 +1,7 @@
 #ifndef SOUNDMANAGER_H
 #define SOUNDMANAGER_H
 
-#pragma once
-#include "Globals.h"
+#include <fmod/fmod.h>
 
 class SoundManager
 {

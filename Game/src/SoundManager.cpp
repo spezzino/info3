@@ -57,5 +57,3 @@ void SoundManager::playExplotionSound(){
 void SoundManager::playMenuSound(){
     FSOUND_PlaySound (FSOUND_FREE,menu_select);
 }
-
-

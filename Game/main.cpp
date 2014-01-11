@@ -42,21 +42,6 @@ int puntos_jugador = 0;
 
 typedef struct
 {
-   float x;
-   float y;
-   float z;
-} geoPoint;
-
-typedef struct
-{
-   float a;
-   float b;
-   float c;
-   float d;
-} plane;
-
-typedef struct
-{
     GLubyte *dibujo;        // Un puntero a los datos de la imagen
     GLuint	bpp;		// bpp significa bits per pixel (bits por punto) es la calidad en palabras sensillas
     GLuint largo;		// Largo de la textura
@@ -75,8 +60,7 @@ textura horizonte;
 
 void cuadrado(double);
 double posEnLineaRecta(void);
-float distancePointPlane(geoPoint,plane);
-plane planeEquation(geoPoint,geoPoint,geoPoint);
+float distancePointPlane(Point,Plane);
 void square2d(double,double,double,double);
 void figura(int,double);
 void inicializarExtra(void);
@@ -216,7 +200,7 @@ int cargarTGA( char *nombre, textura *imagen)
     return 1;	// Todo salio bien
 }
 
-float distancePointPlane(geoPoint p0, plane p)
+float distancePointPlane(Point p0, Plane p)
 {
    float distance = 0.0f;
 
@@ -225,23 +209,7 @@ float distancePointPlane(geoPoint p0, plane p)
    return distance;
 }
 
-plane planeEquation(geoPoint p1, geoPoint p2, geoPoint p3)
-{
-   geoPoint v1 = {p1.x - p2.x, p1.y - p2.y, p1.z - p2.z};
-   geoPoint v2 = {p3.x - p2.x, p3.y - p2.y, p3.z - p2.z};
-   geoPoint n = { (v1.y * v2.z) - (p1.z * p2.y),
-                  (p1.x * p2.z) - (p1.z * p2.x),
-                  (p1.x * p2.y) - (p1.y * p2.x)
-                };
-
-   geoPoint negN = {-n.x, -n.y, -n.z};
-
-   plane p = {negN.x, negN.y, negN.z, (negN.x * -p1.x) + (negN.y * -p1.y) + (negN.z * -p1.z)};
-
-   return p;
-}
-
-void drawGeoPoint(geoPoint p){
+void drawGeoPoint(Point p){
      if(DEBUG){
        sprintf(textBuffer, "(%.2f,%.2f,%.2f)", p.x, p.y, p.z);
        glColor3f(1,1,1);
@@ -264,22 +232,22 @@ void square2d(double x, double y, double z, double angle)
     glDisable(GL_TEXTURE_2D);
 
     //cargar los puntos con las coordenadas reales luego de la rotacion
-    geoPoint p1 = {getXrel(x,-y,angle),getYrel(x,-y,angle),0};
+    Point p1 = Point(getXrel(x,-y,angle),getYrel(x,-y,angle),0);
     drawGeoPoint(p1);
-    geoPoint p2 = {getXrel(x,-y,angle),getYrel(x,-y,angle),z};
+    Point p2 = Point(getXrel(x,-y,angle),getYrel(x,-y,angle),z);
     drawGeoPoint(p2);
-    geoPoint p3 = {getXrel(x,y,angle),getYrel(x,y,angle),z};
+    Point p3 = Point(getXrel(x,y,angle),getYrel(x,y,angle),z);
     drawGeoPoint(p3);
-    geoPoint p4 = {getXrel(x,y,angle),getYrel(x,y,angle),0};
+    Point p4 = Point(getXrel(x,y,angle),getYrel(x,y,angle),0);
     drawGeoPoint(p4);
 
-    plane p = planeEquation(p1,p2,p3);
+    Plane p = Plane::getEquation(p1,p2,p3);
 
    GLfloat angulo_rotZ_radianes = 0.0174532925 * rotZ;
    GLfloat xRel = getXrel(posX,posY,angulo_rotZ_radianes);
    GLfloat yRel = getYrel(posX,posY,angulo_rotZ_radianes);
 
-     geoPoint p0 = {xRel, yRel, 1};
+    Point p0 = Point(xRel, yRel, 1);
     // SI ES MENOR A 1 OCURRE UNA COLISION
     dist = distancePointPlane(p0,p);
     if(dist < RADIO_MOVIL){

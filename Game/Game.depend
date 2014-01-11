@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1389455372 source:c:\documents and settings\winxp\desktop\final2\game\main.cpp
+1388963581 source:c:\documents and settings\winxp\desktop\final2\game\main.cpp
 	"include/Globals.h"
 
 1388862597 c:\documents and settings\winxp\desktop\final2\glutmingw32\include\gl\glut.h
@@ -22,7 +22,7 @@
 1388961583 source:c:\documents and settings\winxp\desktop\final2\game\src\soundmanager.cpp
 	"SoundManager.h"
 
-1389453648 c:\documents and settings\winxp\desktop\final2\game\include\globals.h
+1389132299 c:\documents and settings\winxp\desktop\final2\game\include\globals.h
 	<windows.h>
 	<stdio.h>
 	<iostream>
@@ -32,8 +32,7 @@
 	<math.h>
 	<time.h>
 	<fmod/fmod.h>
-	"Point.h"
-	"Plane.h"
+	"Object.h"
 	"SoundManager.h"
 
 1281661260 c:\documents and settings\winxp\desktop\final2\game\include\freeimage.h
@@ -54,12 +53,4 @@
 1388963523 source:c:\documents and settings\winxp\desktop\final2\game\src\objectloader.cpp
 
 1388963545 source:c:\documents and settings\winxp\desktop\final2\game\src\texturemanager.cpp
-
-1389456009 c:\documents and settings\winxp\desktop\final2\game\include\point.h
-
-1389455986 c:\documents and settings\winxp\desktop\final2\game\include\plane.h
-	"Point.h"
-
-1389455388 source:c:\documents and settings\winxp\desktop\final2\game\src\plane.cpp
-	"Plane.h"
 

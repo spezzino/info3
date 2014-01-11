@@ -17,8 +17,7 @@
 
 using namespace std;
 
-#include "Point.h"
-#include "Plane.h"
+#include "Object.h"
 #include "SoundManager.h"
 
 #define PI 3.141592654

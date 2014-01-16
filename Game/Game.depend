@@ -68,7 +68,7 @@
 1389729475 d:\mis documentos\github\info3\game\include\3dsloader.h
 	"Globals.h"
 
-1389894846 d:\mis documentos\github\info3\game\include\globals.h
+1389903998 d:\mis documentos\github\info3\game\include\globals.h
 	<windows.h>
 	<stdio.h>
 	<iostream>
@@ -92,6 +92,6 @@
 
 1389732076 source:d:\mis documentos\github\info3\game\src\tutorial4.cpp
 
-1389893811 source:d:\mis documentos\github\info3\game\main.cpp
+1389904254 source:d:\mis documentos\github\info3\game\main.cpp
 	"include/Globals.h"
 

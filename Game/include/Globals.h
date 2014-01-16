@@ -38,7 +38,7 @@ using namespace std;
 #define MAX_VIEW_DISTANCE 35.0
 #define GAME_NAME "OpenGL Game"
 
-
+#define NRO_TRONCOS 10
 
 #define POSICION_COL_1 -12
 #define POSICION_COL_2 -2

@@ -5,10 +5,10 @@
 using namespace std;
 
 // OBJETOS A SER REPRESENTADOS
-obj_type object;
-double escala = 0.015f;
+obj_type nave, extra, tronco;
 
 
+GLfloat troncos_x[NRO_TRONCOS], troncos_y[NRO_TRONCOS];
 
 
 int frameCount = 0; //  The number of frames
@@ -101,7 +101,16 @@ void menu(void);
 void calculateFPS(void);
 double getXrel(double,double,double);
 double getYrel(double,double,double);
+void dibujarObjeto(obj_type objeto_en_cuestion, GLfloat escala);
 
+void inicializarTroncos(void){
+
+    for(int i = 0; i< NRO_TRONCOS ; i++){
+        troncos_x[i] = rand()%40 + (TAM_CUADRILATERO + 2);
+        troncos_y[i] = rand()%40 + (TAM_CUADRILATERO + 2);
+    }
+
+}
 float distancePointPlane(geoPoint p0, plane p)
 {
     float distance = 0.0f;
@@ -400,21 +409,26 @@ void init(void)
     glEnable(GL_DEPTH_TEST); // We enable the depth test (also called z buffer)
     glPolygonMode (GL_FRONT_AND_BACK, GL_FILL); // Polygon rasterization mode (polygon filled)
 
-    //glEnable(GL_TEXTURE_2D); // This Enable the Texture mapping
-    //Load3DS (&object,"D:\\Mis documentos\\Facultad\\10.Info3\\EstudioC\\Prueba2Object\\objectos_3d\\boat.3ds");
-    Load3DS (&object,"objectos_3d\\boat.3ds");
-
-    //object.id_texture=LoadBitmap("D:\\Mis documentos\\Facultad\\10.Info3\\EstudioC\\Prueba2Object\\boat.bmp"); // The Function LoadBitmap() return the current texture ID
-
-    object.id_texture=LoadBitmap("objectos_3d\\boat.bmp");
+    Load3DS (&nave,"objectos_3d\\boat03.3ds");
+    nave.id_texture=LoadBitmap("objectos_3d\\boat03.bmp");
     // If the last function returns -1 it means the file was not found so we exit from the program
-    if (object.id_texture==-1)
+    if (nave.id_texture==-1)
     {
         MessageBox(NULL,"Image file: spaceshiptexture.bmp not found", "Zetadeck",MB_OK | MB_ICONERROR);
         exit (0);
     }
 
-    if(!cargarTGA("textures/sandtga.tga", &arena))
+
+    Load3DS (&extra,"objectos_3d\\barril.3ds");
+    extra.id_texture=LoadBitmap("objectos_3d\\barril.bmp");
+    // If the last function returns -1 it means the file was not found so we exit from the program
+    if (extra.id_texture==-1)
+    {
+        MessageBox(NULL,"Image file: spaceshiptexture.bmp not found", "Zetadeck",MB_OK | MB_ICONERROR);
+        exit (0);
+    }
+
+    if(!cargarTGA("textures/dry_earth.tga", &arena))
     {
         printf("Error cargando textura\n");
         exit(0); // Cargamos la textura y chequeamos por errores
@@ -437,7 +451,7 @@ void pelotitasExtrasAnimacion(double t)
 {
     glPushMatrix();
     glColor3d(extra_color_red, extra_color_green, extra_color_blue);
-    glRotated(t*128, 0.5, 1, 1);
+    glRotated(t*128, 1, 1, 0);
     glPushMatrix();
     glTranslated(1,0,0.25);
     glutSolidSphere(0.5,9,9);
@@ -521,8 +535,9 @@ void generarExtras(void)
         glPushMatrix();
         glRotated(rotZ,0.0,0.0,1.0);
         glTranslated(extra_pos_x,extra_pos_y,1);
-        glColor3d(extra_color_red, extra_color_green, extra_color_blue);
-        glutSolidSphere(RADIO_PELOTA_EXTRA,20,20);
+        //glColor3d(extra_color_red, extra_color_green, extra_color_blue);
+        dibujarObjeto(extra, 1.0f);
+        //glutSolidSphere(RADIO_PELOTA_EXTRA,20,20);
         sprintf(textBuffer, "%d", extra_tiempo);
         drawString( textBuffer, extra_pos_x, extra_pos_y, 1);
         // etiquetar pelota
@@ -722,65 +737,61 @@ void dibujarEjesCoordenadas(void)
     drawString("-z",0,0,-10);
 
 }
+void dibujarObjeto(obj_type objeto_en_cuestion, GLfloat escala){
+    glScalef(escala,escala,escala);
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, objeto_en_cuestion.id_texture); // We set the active texture
+    glBegin(GL_TRIANGLES); // glBegin and glEnd delimit the vertices that define a primitive (in our case triangles)
+    for (int l_index=0; l_index<objeto_en_cuestion.polygons_qty; l_index++)
+    {
+        //----------------- FIRST VERTEX -----------------
+        // Texture coordinates of the first vertex
+        glTexCoord2f( objeto_en_cuestion.mapcoord[ objeto_en_cuestion.polygon[l_index].a ].u,
+                      objeto_en_cuestion.mapcoord[ objeto_en_cuestion.polygon[l_index].a ].v);
+        // Coordinates of the first vertex
+        glVertex3f( objeto_en_cuestion.vertex[ objeto_en_cuestion.polygon[l_index].a ].x,
+                    objeto_en_cuestion.vertex[ objeto_en_cuestion.polygon[l_index].a ].y,
+                    objeto_en_cuestion.vertex[ objeto_en_cuestion.polygon[l_index].a ].z); //Vertex definition
 
+        //----------------- SECOND VERTEX -----------------
+        // Texture coordinates of the second vertex
+        glTexCoord2f( objeto_en_cuestion.mapcoord[ objeto_en_cuestion.polygon[l_index].b ].u,
+                      objeto_en_cuestion.mapcoord[ objeto_en_cuestion.polygon[l_index].b ].v);
+        // Coordinates of the second vertex
+        glVertex3f( objeto_en_cuestion.vertex[ objeto_en_cuestion.polygon[l_index].b ].x,
+                    objeto_en_cuestion.vertex[ objeto_en_cuestion.polygon[l_index].b ].y,
+                    objeto_en_cuestion.vertex[ objeto_en_cuestion.polygon[l_index].b ].z);
+
+        //----------------- THIRD VERTEX -----------------
+        // Texture coordinates of the third vertex
+        glTexCoord2f( objeto_en_cuestion.mapcoord[ objeto_en_cuestion.polygon[l_index].c ].u,
+                      objeto_en_cuestion.mapcoord[ objeto_en_cuestion.polygon[l_index].c ].v);
+        // Coordinates of the Third vertex
+        glVertex3f( objeto_en_cuestion.vertex[ objeto_en_cuestion.polygon[l_index].c ].x,
+                    objeto_en_cuestion.vertex[ objeto_en_cuestion.polygon[l_index].c ].y,
+                    objeto_en_cuestion.vertex[ objeto_en_cuestion.polygon[l_index].c ].z);
+    }
+    glEnd();
+    glDisable(GL_TEXTURE_2D);
+}
 void dibujarNave(double t)
 {
 
     // nave
     glPushMatrix();
-
     if(DEBUG)
     {
         glColor3f(1,1,1);
         sprintf(textBuffer, "(%.2f,%.2f,0)",posX,posY);
         drawString(textBuffer, posX, posY, 2);
     }
-
-
-
     glTranslated(posX,posY,0.2);
-
     glRotated(90,0,0,1);
-
     if (bandera_extra_activo == 1)
     {
         pelotitasExtrasAnimacion(glutGet(GLUT_ELAPSED_TIME) / 1000.0);
     }
-    glScalef(escala,escala,escala);
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, object.id_texture); // We set the active texture
-    glBegin(GL_TRIANGLES); // glBegin and glEnd delimit the vertices that define a primitive (in our case triangles)
-    for (int l_index=0; l_index<object.polygons_qty; l_index++)
-    {
-        //----------------- FIRST VERTEX -----------------
-        // Texture coordinates of the first vertex
-        glTexCoord2f( object.mapcoord[ object.polygon[l_index].a ].u,
-                      object.mapcoord[ object.polygon[l_index].a ].v);
-        // Coordinates of the first vertex
-        glVertex3f( object.vertex[ object.polygon[l_index].a ].x,
-                    object.vertex[ object.polygon[l_index].a ].y,
-                    object.vertex[ object.polygon[l_index].a ].z); //Vertex definition
-
-        //----------------- SECOND VERTEX -----------------
-        // Texture coordinates of the second vertex
-        glTexCoord2f( object.mapcoord[ object.polygon[l_index].b ].u,
-                      object.mapcoord[ object.polygon[l_index].b ].v);
-        // Coordinates of the second vertex
-        glVertex3f( object.vertex[ object.polygon[l_index].b ].x,
-                    object.vertex[ object.polygon[l_index].b ].y,
-                    object.vertex[ object.polygon[l_index].b ].z);
-
-        //----------------- THIRD VERTEX -----------------
-        // Texture coordinates of the third vertex
-        glTexCoord2f( object.mapcoord[ object.polygon[l_index].c ].u,
-                      object.mapcoord[ object.polygon[l_index].c ].v);
-        // Coordinates of the Third vertex
-        glVertex3f( object.vertex[ object.polygon[l_index].c ].x,
-                    object.vertex[ object.polygon[l_index].c ].y,
-                    object.vertex[ object.polygon[l_index].c ].z);
-    }
-    glEnd();
-    glDisable(GL_TEXTURE_2D);
+    dibujarObjeto(nave, 0.015f);
     glPopMatrix();
 }
 
@@ -839,6 +850,7 @@ void display(void)
         dibujarNave(t);
         manejadorExtras();
         tableroUsuario(k,t,a);
+
     }
     else   //modo menu
     {
@@ -930,7 +942,9 @@ void specialKey(int key, int x, int y)
         };
         break;
     }
+
     glutPostRedisplay(); // Redraw the scene
+
 }
 
 double posEnLineaRecta(void)
@@ -945,6 +959,7 @@ static void idle(void)
     {
         calculateFPS();
     }
+
     glutPostRedisplay();
 }
 

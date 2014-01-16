@@ -53,3 +53,45 @@
 
 1388963545 source:c:\documents and settings\winxp\desktop\final2\game\src\texturemanager.cpp
 
+1389894696 source:d:\mis documentos\github\info3\game\src\soundmanager.cpp
+	"SoundManager.h"
+
+1389551024 d:\mis documentos\github\info3\game\include\soundmanager.h
+	<fmod/fmod.h>
+
+1389893859 source:d:\mis documentos\github\info3\game\src\3dsloader.cpp
+	<stdio.h>
+	<stdlib.h>
+	<io.h>
+	"3dsloader.h"
+
+1389729475 d:\mis documentos\github\info3\game\include\3dsloader.h
+	"Globals.h"
+
+1389894846 d:\mis documentos\github\info3\game\include\globals.h
+	<windows.h>
+	<stdio.h>
+	<iostream>
+	<stdlib.h>
+	<string>
+	<GL/glut.h>
+	<math.h>
+	<time.h>
+	<fmod/fmod.h>
+	"SoundManager.h"
+	"texture.h"
+	"3dsloader.h"
+
+1389895759 d:\mis documentos\github\info3\game\include\texture.h
+
+1389895617 source:d:\mis documentos\github\info3\game\src\texture.cpp
+	<stdio.h>
+	<windows.h>
+	<GL/glut.h>
+	"texture.h"
+
+1389732076 source:d:\mis documentos\github\info3\game\src\tutorial4.cpp
+
+1389893811 source:d:\mis documentos\github\info3\game\main.cpp
+	"include/Globals.h"
+

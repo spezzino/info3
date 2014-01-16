@@ -45,10 +45,15 @@
 			<Add library="..\fmod\lib\libfmod.a" />
 			<Add directory="C:/Documents and Settings/winxp/Desktop/final2/GLUTMingw32/lib" />
 		</Linker>
+		<Unit filename="include/3dsloader.h" />
 		<Unit filename="include/Globals.h" />
 		<Unit filename="include/SoundManager.h" />
+		<Unit filename="include/texture.h" />
 		<Unit filename="main.cpp" />
+		<Unit filename="src/3dsloader.cpp" />
 		<Unit filename="src/SoundManager.cpp" />
+		<Unit filename="src/texture.cpp" />
+		<Unit filename="src/tutorial4.cpp" />
 		<Extensions>
 			<code_completion />
 			<envvars />

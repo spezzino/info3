@@ -3,14 +3,14 @@
 SoundManager::SoundManager()
 {
     FSOUND_Init (44100, 16, 0); //sample ratio, channels
-    powerup1 = FSOUND_Sample_Load(FSOUND_FREE,"../audio/powerup1.wav",0,0,0); //channel, file
-    powerup2 = FSOUND_Sample_Load(FSOUND_FREE,"../audio/powerup2.wav",0,0,0);
-    powerup3 = FSOUND_Sample_Load(FSOUND_FREE,"../audio/powerup3.wav",0,0,0);
-    powerup4 = FSOUND_Sample_Load(FSOUND_FREE,"../audio/powerup4.wav",0,0,0);
-    powerup4 = FSOUND_Sample_Load(FSOUND_FREE,"../audio/powerup5.wav",0,0,0);
-    crash = FSOUND_Sample_Load(FSOUND_FREE,"../audio/crash.wav",0,0,0);
-    explotion = FSOUND_Sample_Load(FSOUND_FREE,"../audio/explosion.wav",0,0,0);
-    menu_select = FSOUND_Sample_Load(FSOUND_FREE,"../audio/menu_select.wav",0,0,0);
+    powerup1 = FSOUND_Sample_Load(FSOUND_FREE,"audio/powerup1.wav",0,0,0); //channel, file
+    powerup2 = FSOUND_Sample_Load(FSOUND_FREE,"audio/powerup2.wav",0,0,0);
+    powerup3 = FSOUND_Sample_Load(FSOUND_FREE,"audio/powerup3.wav",0,0,0);
+    powerup4 = FSOUND_Sample_Load(FSOUND_FREE,"audio/powerup4.wav",0,0,0);
+    powerup5 = FSOUND_Sample_Load(FSOUND_FREE,"audio/powerup5.wav",0,0,0);
+    crash = FSOUND_Sample_Load(FSOUND_FREE,"audio/crash.wav",0,0,0);
+    explotion = FSOUND_Sample_Load(FSOUND_FREE,"audio/explosion.wav",0,0,0);
+    menu_select = FSOUND_Sample_Load(FSOUND_FREE,"audio/menu_select.wav",0,0,0);
 }
 
 SoundManager::~SoundManager()

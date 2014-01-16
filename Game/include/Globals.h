@@ -17,6 +17,12 @@ using namespace std;
 
 #include "SoundManager.h"
 
+/* TAMAÑO Y POSICIONES DONDE APARECE LA VENTANA */
+#define ANCHO_VENTANA 800
+#define ALTO_VENTANA 600
+#define X_APARICION 50
+#define Y_APARICION 50
+
 
 
 #define PI 3.141592654
@@ -31,6 +37,8 @@ using namespace std;
 #define TIEMPO_VALIDEZ_EXTRA_VELOCIDAD_MURO 1500
 #define MAX_VIEW_DISTANCE 35.0
 #define GAME_NAME "OpenGL Game"
+
+
 
 #define POSICION_COL_1 -12
 #define POSICION_COL_2 -2

@@ -72,15 +72,15 @@ textura agua;
 textura horizonte;
 
 void cuadrado(double);
-double posEnLineaRecta(void);
+float posEnLineaRecta(void);
 float distancePointPlane(geoPoint,plane);
 plane planeEquation(geoPoint,geoPoint,geoPoint);
-void square2d(double,double,double,double);
-void figura(int,double);
+void square2d(float,float,float,float);
+void figura(int,float);
 void inicializarExtra(void);
 void drawString(char*,float,float,float);
 void tableroUsuario(double,double,double);
-void circle2d(double);
+void circle2d(float);
 void init(void);
 void pelotitasExtrasAnimacion(double);
 void probabilidadExtra(void);
@@ -99,8 +99,8 @@ int cargarTGA(char *,textura *);
 void loadObj(char *);
 void menu(void);
 void calculateFPS(void);
-double getXrel(double,double,double);
-double getYrel(double,double,double);
+float getXrel(float,float,float);
+float getYrel(float,float,float);
 void dibujarObjeto(obj_type objeto_en_cuestion, GLfloat escala);
 
 void inicializarTroncos(void){
@@ -113,27 +113,28 @@ void inicializarTroncos(void){
 }
 float distancePointPlane(geoPoint p0, plane p)
 {
-    float distance = 0.0f;
+   float distance = 0.0f;
 
-    distance = abs( p.a * p0.x + p.b * p0.y + p.c * p0.z + p.d );
-    distance = distance / sqrt( pow(p.a, 2) + pow(p.b, 2) + pow(p.c, 2) );
-    return distance;
+   distance = abs( (p.a * p0.x) + (p.b * p0.y) + (p.c * p0.z) + p.d );
+   distance = distance / sqrt( pow(p.a, 2) + pow(p.b, 2) + pow(p.c, 2) );
+   return distance;
 }
 
-plane planeEquation(geoPoint p1, geoPoint p2, geoPoint p3)
+plane planeEquation(geoPoint a, geoPoint b, geoPoint c)
 {
-    geoPoint v1 = {p1.x - p2.x, p1.y - p2.y, p1.z - p2.z};
-    geoPoint v2 = {p3.x - p2.x, p3.y - p2.y, p3.z - p2.z};
-    geoPoint n = { (v1.y * v2.z) - (p1.z * p2.y),
-                   (p1.x * p2.z) - (p1.z * p2.x),
-                   (p1.x * p2.y) - (p1.y * p2.x)
-                 };
+   geoPoint rab = {b.x - a.x, b.y - a.y, b.z - a.z};
+   geoPoint rac = {c.x - a.x, c.y - a.y, c.z - a.z};
+   geoPoint n = { (rab.y * rac.z) - (rab.z * rac.y),
+                  (rab.x * rac.z) - (rab.z * rac.x),
+                  (rab.x * rac.y) - (rab.y * rac.x)
+                };
 
-    geoPoint negN = {-n.x, -n.y, -n.z};
+   //geoPoint negN = {-n.x, -n.y, -n.z};
 
-    plane p = {negN.x, negN.y, negN.z, (negN.x * -p1.x) + (negN.y * -p1.y) + (negN.z * -p1.z)};
+   //plane p = {negN.x, negN.y, negN.z, (negN.x * -p1.x) + (negN.y * -p1.y) + (negN.z * -p1.z)};
+   plane p = {n.x, n.y, n.z, ( (n.x * -a.x) + (n.y * -a.y) + (n.z * -a.z) )};
 
-    return p;
+   return p;
 }
 
 void drawGeoPoint(geoPoint p)
@@ -146,22 +147,18 @@ void drawGeoPoint(geoPoint p)
     }
 }
 
-void square2d(double x, double y, double z, double angle)
+void square2d(float x, float y, float z, float angle)
 {
 
     glEnable(GL_TEXTURE_2D);
-    // Muro
-    glBindTexture(GL_TEXTURE_2D,muro.ID);
-    glBegin(GL_QUADS);
-    glTexCoord2f(-y,0);
-    glVertex3f(x,-y,0);
-    glTexCoord2f(-y,z);
-    glVertex3f(x,-y,z);
-    glTexCoord2f(y,z);
-    glVertex3f(x,y,z);
-    glTexCoord2f(y,0);
-    glVertex3f(x,y,0);
-    glEnd();
+      // Muro
+      glBindTexture(GL_TEXTURE_2D,muro.ID);
+      glBegin(GL_QUADS);
+        glTexCoord2f(-y,0);glVertex3f(x,-y,0);
+        glTexCoord2f(-y,z);glVertex3f(x,-y,z);
+        glTexCoord2f(y,z);glVertex3f(x,y,z);
+        glTexCoord2f(y,0);glVertex3f(x,y,0);
+      glEnd();
     glDisable(GL_TEXTURE_2D);
 
     //cargar los puntos con las coordenadas reales luego de la rotacion
@@ -176,16 +173,14 @@ void square2d(double x, double y, double z, double angle)
 
     plane p = planeEquation(p1,p2,p3);
 
-    GLfloat angulo_rotZ_radianes = 0.0174532925 * rotZ;
-    GLfloat xRel = getXrel(posX,posY,angulo_rotZ_radianes);
-    GLfloat yRel = getYrel(posX,posY,angulo_rotZ_radianes);
+   GLfloat xRel = getXrel(posX,posY,rotZ);
+   GLfloat yRel = getYrel(posX,posY,rotZ);
 
-    geoPoint p0 = {xRel, yRel, 1};
+     geoPoint p0 = {xRel, yRel, 1};
     // SI ES MENOR A 1 OCURRE UNA COLISION
     dist = distancePointPlane(p0,p);
-    if(dist < RADIO_MOVIL)
-    {
-        //exit(1);
+    if(dist < RADIO_MOVIL){
+       exit(1);
     }
 
     glColor3d(1,0,0);
@@ -199,48 +194,45 @@ void square2d(double x, double y, double z, double angle)
     drawString(textBuffer, 0,0,4.2);
 }
 
-double getXrel(double x, double y, double angle)
-{
-    return (x*cos(angle*0.0174532925) + y*sin(angle*0.0174532925));
+float getXrel(float x, float y, float angle){
+    float rad = angle*RADS;
+    return (x*std::cos(rad) + y*std::sin(rad));
 }
 
-double getYrel(double x, double y, double angle)
-{
-    return (-x*sin(angle*0.0174532925) + y*cos(angle*0.0174532925));
+float getYrel(float x, float y, float angle){
+    float rad = angle*RADS;
+    return (-x*std::sin(rad) + y*std::cos(rad));
 }
 
-void figura(int vertex, double size)
-{
+void figura(int vertex, float size){
     int i = 0;
-    double angle = 360 / vertex;
-    double edge = size*4/vertex;
+    float angle = 360 / vertex;
+    float edge = size*4/vertex;
 
-    double fixer = 1;
-    switch(vertex)
-    {
-    case 5:
-        fixer = 1.35;
-        break;
-    case 6:
-        fixer = 1.67;
-        break;
-    case 7:
-        fixer = 2.0;
-        break;
-    default:
-        fixer = 1.0;
-        break;
+    float fixer = 1;
+    switch(vertex){
+        case 5:
+             fixer = 1.35;
+             break;
+        case 6:
+             fixer = 1.67;
+             break;
+        case 7:
+             fixer = 2.0;
+             break;
+        default:
+             fixer = 1.0;
+             break;
     }
     glPushMatrix();
-    //glRotated(-90, 0,0,1); //cambiar el primer 0 por un rand fijo
+      //glRotated(-90, 0,0,1); //cambiar el primer 0 por un rand fijo
 
-    //for(i=0; i<vertex-1; i++){
-    glPushMatrix();
-    i=1;
-    glRotated(i*angle,0,0,1);
-    square2d(edge*fixer,edge,1,i*angle);
-    glPopMatrix();
-    //}
+      for(i=0; i<vertex-1; i++){
+        glPushMatrix();
+          glRotated(-i*angle,0,0,1);
+          square2d(edge*fixer,edge,1,i*angle);
+        glPopMatrix();
+      }
     glPopMatrix();
 }
 
@@ -305,7 +297,7 @@ void tableroUsuario( double t, double k, double a)
 /*
 Funcion que dibuja el cuadrilatero de juego
 */
-void circle2d(double radius)
+void circle2d(float radius)
 {
     glEnable(GL_TEXTURE_2D);
 
@@ -349,33 +341,34 @@ void circle2d(double radius)
     glDisable(GL_TEXTURE_2D);
 
 
-    sprintf(textBuffer, "(2,2)");
-    drawString(textBuffer, 2,2,0.1);
-    sprintf(textBuffer, "(-2,-2)");
-    drawString(textBuffer, -2,-2,0.1);
-    sprintf(textBuffer, "(0,0)");
-    drawString(textBuffer, 0,0,0.1);
-    sprintf(textBuffer, "(2,-2)");
-    drawString(textBuffer, 2,-2,0.1);
-    sprintf(textBuffer, "(-2,2)");
-    drawString(textBuffer, -2,2,0.1);
-    sprintf(textBuffer, "(2,0)");
-    drawString(textBuffer, 2,0,0.1);
-    sprintf(textBuffer, "(0,2)");
-    drawString(textBuffer, 0,2,0.1);
-    sprintf(textBuffer, "(0,-2)");
-    drawString(textBuffer, 0,-2,0.1);
-    sprintf(textBuffer, "(-2,0)");
-    drawString(textBuffer, -2,0,0.1);
-    sprintf(textBuffer, "(-4,-4)");
-    drawString(textBuffer, -4,-4,0.1);
-    sprintf(textBuffer, "(-4,4)");
-    drawString(textBuffer, -4,4,0.1);
-    sprintf(textBuffer, "(4,4)");
-    drawString(textBuffer, 4,4,0.1);
-    sprintf(textBuffer, "(4,-4)");
-    drawString(textBuffer, 4,-4,0.1);
-
+    if(DEBUG){
+        sprintf(textBuffer, "(2,2)");
+        drawString(textBuffer, 2,2,0.1);
+        sprintf(textBuffer, "(-2,-2)");
+        drawString(textBuffer, -2,-2,0.1);
+        sprintf(textBuffer, "(0,0)");
+        drawString(textBuffer, 0,0,0.1);
+        sprintf(textBuffer, "(2,-2)");
+        drawString(textBuffer, 2,-2,0.1);
+        sprintf(textBuffer, "(-2,2)");
+        drawString(textBuffer, -2,2,0.1);
+        sprintf(textBuffer, "(2,0)");
+        drawString(textBuffer, 2,0,0.1);
+        sprintf(textBuffer, "(0,2)");
+        drawString(textBuffer, 0,2,0.1);
+        sprintf(textBuffer, "(0,-2)");
+        drawString(textBuffer, 0,-2,0.1);
+        sprintf(textBuffer, "(-2,0)");
+        drawString(textBuffer, -2,0,0.1);
+        sprintf(textBuffer, "(-4,-4)");
+        drawString(textBuffer, -4,-4,0.1);
+        sprintf(textBuffer, "(-4,4)");
+        drawString(textBuffer, -4,4,0.1);
+        sprintf(textBuffer, "(4,4)");
+        drawString(textBuffer, 4,4,0.1);
+        sprintf(textBuffer, "(4,-4)");
+        drawString(textBuffer, 4,-4,0.1);
+    }
 }
 
 
@@ -840,7 +833,7 @@ void display(void)
         circle2d(TAM_CUADRILATERO);
 
         glColor3d(1,1,1);
-        //figura(7,10);
+        figura(7,10);
         glColor3d(0.5,0.5,0.5);
         figura(4,4);
 
@@ -913,7 +906,7 @@ void keyboard (unsigned char key, int x, int y)
 // called on special key pressed
 void specialKey(int key, int x, int y)
 {
-    const double pelr = posEnLineaRecta();
+    const float pelr = posEnLineaRecta();
     // Check which key is pressed
     switch(key)
     {
@@ -947,7 +940,7 @@ void specialKey(int key, int x, int y)
 
 }
 
-double posEnLineaRecta(void)
+float posEnLineaRecta(void)
 {
     return sqrt( pow(posX,2) + pow(posY,2) );
 }

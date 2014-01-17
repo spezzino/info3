@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <string>
 #include <GL/glut.h>
-#include <math.h>
+#include <cmath>
 #include <time.h>
 #include <fmod/fmod.h>
 
@@ -26,6 +26,7 @@ using namespace std;
 
 
 #define PI 3.141592654
+#define RADS 0.0174532925
 #define TAM_CUADRILATERO 5
 #define MAX_LEVEL 30
 #define RADIO_PELOTA_EXTRA 1

@@ -7,6 +7,8 @@ using namespace std;
 // OBJETOS A SER REPRESENTADOS
 obj_type nave, extra, tronco;
 
+GLint cielo;
+
 
 GLfloat troncos_x[NRO_TRONCOS], troncos_y[NRO_TRONCOS];
 
@@ -70,12 +72,13 @@ textura arena;
 textura muro;
 textura agua;
 textura horizonte;
+textura sky;
 
 void cuadrado(double);
 float posEnLineaRecta(void);
 float distancePointPlane(geoPoint,plane);
 plane planeEquation(geoPoint,geoPoint,geoPoint);
-void square2d(float,float,float,float);
+void square2d(float,float,float,float, GLint);
 void figura(int,float);
 void inicializarExtra(void);
 void drawString(char*,float,float,float);
@@ -103,9 +106,11 @@ float getXrel(float,float,float);
 float getYrel(float,float,float);
 void dibujarObjeto(obj_type objeto_en_cuestion, GLfloat escala);
 
-void inicializarTroncos(void){
+void inicializarTroncos(void)
+{
 
-    for(int i = 0; i< NRO_TRONCOS ; i++){
+    for(int i = 0; i< NRO_TRONCOS ; i++)
+    {
         troncos_x[i] = rand()%40 + (TAM_CUADRILATERO + 2);
         troncos_y[i] = rand()%40 + (TAM_CUADRILATERO + 2);
     }
@@ -113,28 +118,28 @@ void inicializarTroncos(void){
 }
 float distancePointPlane(geoPoint p0, plane p)
 {
-   float distance = 0.0f;
+    float distance = 0.0f;
 
-   distance = abs( (p.a * p0.x) + (p.b * p0.y) + (p.c * p0.z) + p.d );
-   distance = distance / sqrt( pow(p.a, 2) + pow(p.b, 2) + pow(p.c, 2) );
-   return distance;
+    distance = abs( (p.a * p0.x) + (p.b * p0.y) + (p.c * p0.z) + p.d );
+    distance = distance / sqrt( pow(p.a, 2) + pow(p.b, 2) + pow(p.c, 2) );
+    return distance;
 }
 
 plane planeEquation(geoPoint a, geoPoint b, geoPoint c)
 {
-   geoPoint rab = {b.x - a.x, b.y - a.y, b.z - a.z};
-   geoPoint rac = {c.x - a.x, c.y - a.y, c.z - a.z};
-   geoPoint n = { (rab.y * rac.z) - (rab.z * rac.y),
-                  (rab.x * rac.z) - (rab.z * rac.x),
-                  (rab.x * rac.y) - (rab.y * rac.x)
-                };
+    geoPoint rab = {b.x - a.x, b.y - a.y, b.z - a.z};
+    geoPoint rac = {c.x - a.x, c.y - a.y, c.z - a.z};
+    geoPoint n = { (rab.y * rac.z) - (rab.z * rac.y),
+                   (rab.x * rac.z) - (rab.z * rac.x),
+                   (rab.x * rac.y) - (rab.y * rac.x)
+                 };
 
-   //geoPoint negN = {-n.x, -n.y, -n.z};
+    //geoPoint negN = {-n.x, -n.y, -n.z};
 
-   //plane p = {negN.x, negN.y, negN.z, (negN.x * -p1.x) + (negN.y * -p1.y) + (negN.z * -p1.z)};
-   plane p = {n.x, n.y, n.z, ( (n.x * -a.x) + (n.y * -a.y) + (n.z * -a.z) )};
+    //plane p = {negN.x, negN.y, negN.z, (negN.x * -p1.x) + (negN.y * -p1.y) + (negN.z * -p1.z)};
+    plane p = {n.x, n.y, n.z, ( (n.x * -a.x) + (n.y * -a.y) + (n.z * -a.z) )};
 
-   return p;
+    return p;
 }
 
 void drawGeoPoint(geoPoint p)
@@ -147,18 +152,23 @@ void drawGeoPoint(geoPoint p)
     }
 }
 
-void square2d(float x, float y, float z, float angle)
+void square2d(float x, float y, float z, float angle, GLint textura_id)
 {
 
     glEnable(GL_TEXTURE_2D);
-      // Muro
-      glBindTexture(GL_TEXTURE_2D,muro.ID);
-      glBegin(GL_QUADS);
-        glTexCoord2f(-y,0);glVertex3f(x,-y,0);
-        glTexCoord2f(-y,z);glVertex3f(x,-y,z);
-        glTexCoord2f(y,z);glVertex3f(x,y,z);
-        glTexCoord2f(y,0);glVertex3f(x,y,0);
-      glEnd();
+
+    // Muro
+    glBindTexture(GL_TEXTURE_2D,textura_id);
+    glBegin(GL_QUADS);
+    glTexCoord2f(-y,0);
+    glVertex3f(x,-y,0);
+    glTexCoord2f(-y,z);
+    glVertex3f(x,-y,z);
+    glTexCoord2f(y,z);
+    glVertex3f(x,y,z);
+    glTexCoord2f(y,0);
+    glVertex3f(x,y,0);
+    glEnd();
     glDisable(GL_TEXTURE_2D);
 
     //cargar los puntos con las coordenadas reales luego de la rotacion
@@ -173,14 +183,15 @@ void square2d(float x, float y, float z, float angle)
 
     plane p = planeEquation(p1,p2,p3);
 
-   GLfloat xRel = getXrel(posX,posY,rotZ);
-   GLfloat yRel = getYrel(posX,posY,rotZ);
+    GLfloat xRel = getXrel(posX,posY,rotZ);
+    GLfloat yRel = getYrel(posX,posY,rotZ);
 
-     geoPoint p0 = {xRel, yRel, 1};
+    geoPoint p0 = {xRel, yRel, 1};
     // SI ES MENOR A 1 OCURRE UNA COLISION
     dist = distancePointPlane(p0,p);
-    if(dist < RADIO_MOVIL){
-       exit(1);
+    if(dist < RADIO_MOVIL)
+    {
+        //exit(1);
     }
 
     glColor3d(1,0,0);
@@ -194,45 +205,50 @@ void square2d(float x, float y, float z, float angle)
     drawString(textBuffer, 0,0,4.2);
 }
 
-float getXrel(float x, float y, float angle){
+float getXrel(float x, float y, float angle)
+{
     float rad = angle*RADS;
     return (x*std::cos(rad) + y*std::sin(rad));
 }
 
-float getYrel(float x, float y, float angle){
+float getYrel(float x, float y, float angle)
+{
     float rad = angle*RADS;
     return (-x*std::sin(rad) + y*std::cos(rad));
 }
 
-void figura(int vertex, float size){
+void figura(int vertex, float size)
+{
     int i = 0;
     float angle = 360 / vertex;
     float edge = size*4/vertex;
 
     float fixer = 1;
-    switch(vertex){
-        case 5:
-             fixer = 1.35;
-             break;
-        case 6:
-             fixer = 1.67;
-             break;
-        case 7:
-             fixer = 2.0;
-             break;
-        default:
-             fixer = 1.0;
-             break;
+    switch(vertex)
+    {
+    case 5:
+        fixer = 1.35;
+        break;
+    case 6:
+        fixer = 1.67;
+        break;
+    case 7:
+        fixer = 2.0;
+        break;
+    default:
+        fixer = 1.0;
+        break;
     }
     glPushMatrix();
-      //glRotated(-90, 0,0,1); //cambiar el primer 0 por un rand fijo
+    //glRotated(-90, 0,0,1); //cambiar el primer 0 por un rand fijo
 
-      for(i=0; i<vertex-1; i++){
+    for(i=0; i<vertex-1; i++)
+    {
         glPushMatrix();
-          glRotated(-i*angle,0,0,1);
-          square2d(edge*fixer,edge,1,i*angle);
+        glRotated(-i*angle,0,0,1);
+        square2d(edge*fixer,edge,1,i*angle ,muro.ID);
         glPopMatrix();
-      }
+    }
     glPopMatrix();
 }
 
@@ -305,14 +321,14 @@ void circle2d(float radius)
     glColor3ub(255,218,53);
     glBindTexture(GL_TEXTURE_2D,arena.ID);
     glBegin(GL_POLYGON);
-    glTexCoord3f(MAX_VIEW_DISTANCE, MAX_VIEW_DISTANCE,0);
-    glVertex3f(MAX_VIEW_DISTANCE, MAX_VIEW_DISTANCE,0);
-    glTexCoord3f(MAX_VIEW_DISTANCE, -MAX_VIEW_DISTANCE,0);
-    glVertex3f(MAX_VIEW_DISTANCE, -MAX_VIEW_DISTANCE,0);
-    glTexCoord3f(-MAX_VIEW_DISTANCE, -MAX_VIEW_DISTANCE,0);
+    glTexCoord2f(0.0,0.0);
     glVertex3f(-MAX_VIEW_DISTANCE, -MAX_VIEW_DISTANCE,0);
-    glTexCoord3f(-MAX_VIEW_DISTANCE, MAX_VIEW_DISTANCE,0);
+    glTexCoord2f(1.0,0.0);
     glVertex3f(-MAX_VIEW_DISTANCE, MAX_VIEW_DISTANCE,0);
+    glTexCoord2f(1.0,1.0);
+    glVertex3f(MAX_VIEW_DISTANCE, MAX_VIEW_DISTANCE,0);
+    glTexCoord2f(0.0,1.0);
+    glVertex3f(MAX_VIEW_DISTANCE, -MAX_VIEW_DISTANCE,0);
     glEnd();
 
     // Agua
@@ -341,7 +357,8 @@ void circle2d(float radius)
     glDisable(GL_TEXTURE_2D);
 
 
-    if(DEBUG){
+    if(DEBUG)
+    {
         sprintf(textBuffer, "(2,2)");
         drawString(textBuffer, 2,2,0.1);
         sprintf(textBuffer, "(-2,-2)");
@@ -407,7 +424,7 @@ void init(void)
     // If the last function returns -1 it means the file was not found so we exit from the program
     if (nave.id_texture==-1)
     {
-        MessageBox(NULL,"Image file: spaceshiptexture.bmp not found", "Zetadeck",MB_OK | MB_ICONERROR);
+        MessageBox(NULL,"No se puede cargar textura de la nave", "Zetadeck",MB_OK | MB_ICONERROR);
         exit (0);
     }
 
@@ -417,11 +434,26 @@ void init(void)
     // If the last function returns -1 it means the file was not found so we exit from the program
     if (extra.id_texture==-1)
     {
-        MessageBox(NULL,"Image file: spaceshiptexture.bmp not found", "Zetadeck",MB_OK | MB_ICONERROR);
+        MessageBox(NULL,"No se puede cargar textura del objeto extra", "Zetadeck",MB_OK | MB_ICONERROR);
         exit (0);
     }
 
-    if(!cargarTGA("textures/dry_earth.tga", &arena))
+    cielo=LoadBitmap("textures\\blue-sky.bmp");
+    // If the last function returns -1 it means the file was not found so we exit from the program
+    if (cielo==-1)
+    {
+        MessageBox(NULL,"No se puede cargar textura del horizonte", "Zetadeck",MB_OK | MB_ICONERROR);
+        exit (0);
+    }
+
+    if(!cargarTGA("textures/sky.tga", &sky))
+    {
+        printf("Error cargando textura\n");
+        exit(0); // Cargamos la textura y chequeamos por errores
+    }
+
+    //if(!cargarTGA("textures/dry_earth.tga", &arena))
+    if(!cargarTGA("textures/sand.tga", &arena))
     {
         printf("Error cargando textura\n");
         exit(0); // Cargamos la textura y chequeamos por errores
@@ -437,6 +469,8 @@ void init(void)
         printf("Error cargando textura\n");
         exit(0); // Cargamos la textura y chequeamos por errores
     }
+
+
 }
 
 
@@ -730,7 +764,8 @@ void dibujarEjesCoordenadas(void)
     drawString("-z",0,0,-10);
 
 }
-void dibujarObjeto(obj_type objeto_en_cuestion, GLfloat escala){
+void dibujarObjeto(obj_type objeto_en_cuestion, GLfloat escala)
+{
     glScalef(escala,escala,escala);
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, objeto_en_cuestion.id_texture); // We set the active texture
@@ -799,8 +834,38 @@ void reducirAnguloEntre0y360(void)
         rotZ -= 360;
     };
 }
+ void dibujarHorizonte(float x, float y, float z, GLint textura_id){
+
+    float amplitud_horizonte = 25.0f;
+    float distancia_horizonte = 20.0f;
+
+    glEnable(GL_TEXTURE_2D);
+    //glBindTexture(GL_TEXTURE_2D,sky.ID);
+    //glBindTexture(GL_TEXTURE_2D,sky.ID);
+    glBindTexture(GL_TEXTURE_2D,cielo);
+
+    glPushMatrix();
+    glBegin(GL_QUADS);
+    glTexCoord2f(0.0,0.0);
+    glVertex3f(-amplitud_horizonte,distancia_horizonte, 0.0);
+
+    glTexCoord2f(1.0,0.0);
+    glVertex3f(-amplitud_horizonte,distancia_horizonte, amplitud_horizonte);
+
+    glTexCoord2f(1.0,1.0);
+    glVertex3f(amplitud_horizonte,distancia_horizonte, amplitud_horizonte);
+
+    glTexCoord2f(0.0,1.0);
+    glVertex3f(amplitud_horizonte,distancia_horizonte, 0.0);
 
 
+
+
+    glEnd();
+    glDisable(GL_TEXTURE_2D);
+
+    glPopMatrix();
+}
 
 // Draw the lines (x,y,z)
 void display(void)
@@ -823,7 +888,7 @@ void display(void)
     {
 
         reducirAnguloEntre0y360();
-
+        dibujarHorizonte(50.0,50.0,50.0,sky.ID);
         glPushMatrix();
         glRotatef(rotZ,0.0,0.0,1.0);
         if(DEBUG)

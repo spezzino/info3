@@ -49,6 +49,12 @@ int invensibilidad = 0;
 int vidas_jugador = 3;
 int puntos_jugador = 0;
 
+float radioObstaculo1 = 20;
+float radioObstaculo2 = 40;
+float radioObstaculo3 = 60;
+
+int crashTime = 0;
+
 typedef struct
 {
     float x;
@@ -64,6 +70,14 @@ typedef struct
     float d;
 } plane;
 
+typedef struct
+{
+    geoPoint p1;
+    geoPoint p2;
+    geoPoint p3;
+    geoPoint p4;
+} pointsObject;
+
 /* AUDIO */
 SoundManager soundManager;
 
@@ -75,6 +89,7 @@ textura horizonte;
 textura sky;
 
 void cuadrado(double);
+float distanciaEnLineaRecta(geoPoint, geoPoint);
 float posEnLineaRecta(void);
 float distancePointPlane(geoPoint,plane);
 plane planeEquation(geoPoint,geoPoint,geoPoint);
@@ -82,6 +97,8 @@ void square2d(float,float,float,float, GLint);
 void figura(int,float);
 void inicializarExtra(void);
 void drawString(char*,float,float,float);
+void drawGeoPoint(geoPoint);
+void drawGeoPoint(float,float,float);
 void tableroUsuario(double,double,double);
 void circle2d(float);
 void init(void);
@@ -152,34 +169,39 @@ void drawGeoPoint(geoPoint p)
     }
 }
 
-void square2d(float x, float y, float z, float angle, GLint textura_id)
+void drawGeoPoint(float x, float y, float z)
 {
+    if(DEBUG)
+    {
+        sprintf(textBuffer, "(%.2f,%.2f,%.2f)", x, y, z);
+        glColor3f(1,1,1);
+        drawString(textBuffer, x,y,z);
+    }
+}
 
-    glEnable(GL_TEXTURE_2D);
-
-    // Muro
-    glBindTexture(GL_TEXTURE_2D,textura_id);
-    glBegin(GL_QUADS);
-    glTexCoord2f(-y,0);
-    glVertex3f(x,-y,0);
-    glTexCoord2f(-y,z);
-    glVertex3f(x,-y,z);
-    glTexCoord2f(y,z);
-    glVertex3f(x,y,z);
-    glTexCoord2f(y,0);
-    glVertex3f(x,y,0);
-    glEnd();
-    glDisable(GL_TEXTURE_2D);
+pointsObject square2d(float x, float y, float z, float angle, GLint textura_id)
+{
 
     //cargar los puntos con las coordenadas reales luego de la rotacion
     geoPoint p1 = {getXrel(x,-y,angle),getYrel(x,-y,angle),0};
-    drawGeoPoint(p1);
     geoPoint p2 = {getXrel(x,-y,angle),getYrel(x,-y,angle),z};
-    drawGeoPoint(p2);
     geoPoint p3 = {getXrel(x,y,angle),getYrel(x,y,angle),z};
-    drawGeoPoint(p3);
     geoPoint p4 = {getXrel(x,y,angle),getYrel(x,y,angle),0};
-    drawGeoPoint(p4);
+
+    glEnable(GL_TEXTURE_2D);
+    // Muro
+    glBindTexture(GL_TEXTURE_2D,textura_id);
+    glBegin(GL_QUADS);
+    glTexCoord2f(p1.y,0);
+    glVertex3f(p1.x,p1.y,0);
+    glTexCoord2f(p2.y,p2.z);
+    glVertex3f(p2.x,p2.y,p2.z);
+    glTexCoord2f(p3.y,p3.z);
+    glVertex3f(p3.x,p3.y,p3.z);
+    glTexCoord2f(p4.y,0);
+    glVertex3f(p4.x,p4.y,0);
+    glEnd();
+    glDisable(GL_TEXTURE_2D);
 
     plane p = planeEquation(p1,p2,p3);
 
@@ -189,9 +211,38 @@ void square2d(float x, float y, float z, float angle, GLint textura_id)
     geoPoint p0 = {xRel, yRel, 1};
     // SI ES MENOR A 1 OCURRE UNA COLISION
     dist = distancePointPlane(p0,p);
-    if(dist < RADIO_MOVIL)
+    float distp2p0 = distanciaEnLineaRecta(p2,p0);
+    float distp3p0 = distanciaEnLineaRecta(p3,p0);
+    float distp2p3 = distanciaEnLineaRecta(p2,p3);
+
+    if(dist <= RADIO_MOVIL)
     {
-        //exit(1);
+        if(!(distp2p0 >= distp2p3 || distp3p0 >= distp2p3))
+        {
+            if(DEBUG)
+            {
+                glColor3d(1,0,0);
+                sprintf(textBuffer, "crash %d", glutGet(GLUT_ELAPSED_TIME));
+                drawString(textBuffer, -5,-5,4.8);
+            }
+            if(crashTime == 0)
+            {
+                //has crashed!!
+                crashTime = glutGet(GLUT_ELAPSED_TIME);
+            }
+        }
+    }
+
+    if(crashTime > 0 && (glutGet(GLUT_ELAPSED_TIME) - crashTime > 5000))
+    {
+        crashTime = 0;
+    }
+    if(DEBUG)
+    {
+        printf("%d\n", glutGet(GLUT_ELAPSED_TIME));
+        glColor3d(0,1,0);
+        sprintf(textBuffer, "crash %d", crashTime);
+        drawString(textBuffer, -3,-3,5.8);
     }
 
     glColor3d(1,0,0);
@@ -203,6 +254,9 @@ void square2d(float x, float y, float z, float angle, GLint textura_id)
 
     sprintf(textBuffer, "xRel: %.2f | yRel: %.2f", xRel, yRel);
     drawString(textBuffer, 0,0,4.2);
+
+    pointsObject points1 = {p1,p2,p3,p4};
+    return points1;
 }
 
 float getXrel(float x, float y, float angle)
@@ -215,6 +269,14 @@ float getYrel(float x, float y, float angle)
 {
     float rad = angle*RADS;
     return (-x*std::sin(rad) + y*std::cos(rad));
+}
+
+void drawPoints(pointsObject points1)
+{
+    drawGeoPoint(points1.p1);
+    drawGeoPoint(points1.p2);
+    drawGeoPoint(points1.p3);
+    drawGeoPoint(points1.p4);
 }
 
 void figura(int vertex, float size)
@@ -245,9 +307,10 @@ void figura(int vertex, float size)
     for(i=0; i<vertex-1; i++)
     {
         glPushMatrix();
-        glRotated(-i*angle,0,0,1);
-        square2d(edge*fixer,edge,1,i*angle ,muro.ID);
+        //glRotated(-(i*angle),0,0,1);
+        pointsObject points1 = square2d(edge*fixer,edge,1,i*angle);
         glPopMatrix();
+        drawPoints(points1);
     }
     glPopMatrix();
 }
@@ -256,7 +319,6 @@ void figura(int vertex, float size)
 void inicializarExtra(void)
 {
     velocidad_movil = 0.1f;
-    velocidad_paredes = 0.1f;
 
     extra_pos_x = 0.0f;
     extra_pos_y = 0.0f;
@@ -469,8 +531,6 @@ void init(void)
         printf("Error cargando textura\n");
         exit(0); // Cargamos la textura y chequeamos por errores
     }
-
-
 }
 
 
@@ -897,17 +957,42 @@ void display(void)
         }
         circle2d(TAM_CUADRILATERO);
 
-        glColor3d(1,1,1);
-        figura(7,10);
-        glColor3d(0.5,0.5,0.5);
-        figura(4,4);
-
-
         glPopMatrix();
 
         dibujarNave(t);
         manejadorExtras();
         tableroUsuario(k,t,a);
+
+        figura(5,radioObstaculo1);
+        figura(4,radioObstaculo2);
+        figura(6,radioObstaculo3);
+
+        if(radioObstaculo1 < 1.2)
+        {
+            radioObstaculo1 = 60;
+        }
+        else
+        {
+            radioObstaculo1 -= velocidad_paredes;
+        }
+
+        if(radioObstaculo2 < 1.2)
+        {
+            radioObstaculo2 = 60;
+        }
+        else
+        {
+            radioObstaculo2 -= velocidad_paredes;
+        }
+
+        if(radioObstaculo3 < 1.2)
+        {
+            radioObstaculo3 = 60;
+        }
+        else
+        {
+            radioObstaculo3 -= velocidad_paredes;
+        }
 
     }
     else   //modo menu
@@ -1010,6 +1095,10 @@ float posEnLineaRecta(void)
     return sqrt( pow(posX,2) + pow(posY,2) );
 }
 
+float distanciaEnLineaRecta(geoPoint p1, geoPoint p2)
+{
+    return sqrt( pow(p1.x-p2.x, 2)+ pow(p1.y-p2.y, 2) + pow(p1.z-p2.z, 2));
+}
 
 static void idle(void)
 {

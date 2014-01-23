@@ -1,4 +1,8 @@
+#include <stdio.h>
 #include "SoundManager.h"
+
+int channel_menu_music=-1;
+int channel_game_music=-1;
 
 SoundManager::SoundManager()
 {
@@ -11,6 +15,8 @@ SoundManager::SoundManager()
     crash = FSOUND_Sample_Load(FSOUND_FREE,"audio/crash.wav",0,0,0);
     explotion = FSOUND_Sample_Load(FSOUND_FREE,"audio/explosion.wav",0,0,0);
     menu_select = FSOUND_Sample_Load(FSOUND_FREE,"audio/menu_select.wav",0,0,0);
+    menu_music = FSOUND_Sample_Load(FSOUND_FREE,"audio/menu_music.mp3",0,0,0);
+    game_music = FSOUND_Sample_Load(FSOUND_FREE,"audio/game_music.mp3",0,0,0);
 }
 
 SoundManager::~SoundManager()
@@ -23,37 +29,84 @@ SoundManager::~SoundManager()
     FSOUND_Sample_Free (crash);
     FSOUND_Sample_Free (explotion);
     FSOUND_Sample_Free (menu_select);
+    FSOUND_Sample_Free (menu_music);
+    FSOUND_Sample_Free (game_music);
     FSOUND_Close();
 }
 
-void SoundManager::playPowerUp1Sound(){
+void SoundManager::playPowerUp1Sound()
+{
     FSOUND_PlaySound (FSOUND_FREE,powerup1);
 }
 
-void SoundManager::playPowerUp2Sound(){
+void SoundManager::playPowerUp2Sound()
+{
     FSOUND_PlaySound (FSOUND_FREE,powerup2);
 }
 
-void SoundManager::playPowerUp3Sound(){
+void SoundManager::playPowerUp3Sound()
+{
     FSOUND_PlaySound (FSOUND_FREE,powerup3);
 }
 
-void SoundManager::playPowerUp4Sound(){
+void SoundManager::playPowerUp4Sound()
+{
     FSOUND_PlaySound (FSOUND_FREE,powerup4);
 }
 
-void SoundManager::playPowerUp5Sound(){
+void SoundManager::playPowerUp5Sound()
+{
     FSOUND_PlaySound (FSOUND_FREE,powerup5);
 }
 
-void SoundManager::playCrashSound(){
+void SoundManager::playCrashSound()
+{
     FSOUND_PlaySound (FSOUND_FREE,crash);
 }
 
-void SoundManager::playExplotionSound(){
+void SoundManager::playExplotionSound()
+{
     FSOUND_PlaySound (FSOUND_FREE,explotion);
 }
 
-void SoundManager::playMenuSound(){
+void SoundManager::playMenuSound()
+{
     FSOUND_PlaySound (FSOUND_FREE,menu_select);
+}
+
+void SoundManager::playMenuMusic()
+{
+    if (channel_menu_music == -1)
+    {
+        // Caso en el que no tenga asignado ningun canal debe reproducir
+        channel_menu_music = FSOUND_PlaySound (FSOUND_FREE,menu_music);
+    }
+}
+
+void SoundManager::stopMenuMusic()
+{
+    if(channel_menu_music != -1 )
+    {
+        printf("Debo apagar musica menu");
+        FSOUND_StopSound(channel_menu_music);
+        channel_menu_music = -1;
+    }
+}
+
+void SoundManager::playGameMusic()
+{
+    if (channel_game_music == -1)
+    {
+        channel_game_music = FSOUND_PlaySound (FSOUND_FREE,game_music);
+    }
+}
+
+void SoundManager::stopGameMusic()
+{
+    if(channel_game_music != -1 )
+    {
+        printf("Debo apagar musica juego");
+        FSOUND_StopSound(channel_game_music);
+        channel_game_music = -1;
+    }
 }

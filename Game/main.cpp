@@ -7,7 +7,9 @@ using namespace std;
 // OBJETOS A SER REPRESENTADOS
 obj_type nave, extra, tronco;
 
-GLint cielo;
+GLint cielo, play, help, help_text, menu_exit;
+int iterador_menu = 1;
+int mostrar_ayuda = 0;
 
 
 GLfloat troncos_x[NRO_TRONCOS], troncos_y[NRO_TRONCOS];
@@ -508,6 +510,37 @@ void init(void)
         exit (0);
     }
 
+    play=LoadBitmap("image_menu\\play.bmp");
+    // If the last function returns -1 it means the file was not found so we exit from the program
+    if (play==-1)
+    {
+        MessageBox(NULL,"No se puede cargar imagen play", "Zetadeck",MB_OK | MB_ICONERROR);
+        exit (0);
+    }
+
+    help=LoadBitmap("image_menu\\help.bmp");
+    // If the last function returns -1 it means the file was not found so we exit from the program
+    if (help==-1)
+    {
+        MessageBox(NULL,"No se puede cargar imagen help", "Zetadeck",MB_OK | MB_ICONERROR);
+        exit (0);
+    }
+
+    help_text=LoadBitmap("image_menu\\text-help.bmp");
+    // If the last function returns -1 it means the file was not found so we exit from the program
+    if (help_text==-1)
+    {
+        MessageBox(NULL,"No se puede cargar imagen text-help", "Zetadeck",MB_OK | MB_ICONERROR);
+        exit (0);
+    }
+    menu_exit=LoadBitmap("image_menu\\exit.bmp");
+    // If the last function returns -1 it means the file was not found so we exit from the program
+    if (menu_exit==-1)
+    {
+        MessageBox(NULL,"No se puede cargar imagen exit", "Zetadeck",MB_OK | MB_ICONERROR);
+        exit (0);
+    }
+
     if(!cargarTGA("textures/sky.tga", &sky))
     {
         printf("Error cargando textura\n");
@@ -531,6 +564,8 @@ void init(void)
         printf("Error cargando textura\n");
         exit(0); // Cargamos la textura y chequeamos por errores
     }
+
+    gluLookAt ( 0, -15, 8, 0, 0, 0, 0,0,1);
 }
 
 
@@ -894,15 +929,14 @@ void reducirAnguloEntre0y360(void)
         rotZ -= 360;
     };
 }
- void dibujarHorizonte(float x, float y, float z, GLint textura_id){
+void dibujarHorizonte(float x, float y, float z, GLint textura_id)
+{
 
     float amplitud_horizonte = 25.0f;
     float distancia_horizonte = 20.0f;
 
     glEnable(GL_TEXTURE_2D);
-    //glBindTexture(GL_TEXTURE_2D,sky.ID);
-    //glBindTexture(GL_TEXTURE_2D,sky.ID);
-    glBindTexture(GL_TEXTURE_2D,cielo);
+    glBindTexture(GL_TEXTURE_2D,textura_id);
 
     glPushMatrix();
     glBegin(GL_QUADS);
@@ -917,9 +951,6 @@ void reducirAnguloEntre0y360(void)
 
     glTexCoord2f(0.0,1.0);
     glVertex3f(amplitud_horizonte,distancia_horizonte, 0.0);
-
-
-
 
     glEnd();
     glDisable(GL_TEXTURE_2D);
@@ -946,7 +977,8 @@ void display(void)
 
     if(show_menu == 0)  //modo juego
     {
-
+        soundManager.stopMenuMusic();
+        soundManager.playGameMusic();
         reducirAnguloEntre0y360();
         dibujarHorizonte(50.0,50.0,50.0,sky.ID);
         glPushMatrix();
@@ -1003,13 +1035,82 @@ void display(void)
     glutSwapBuffers();
 }
 
+void cargarImagenMenu(int imagen)
+{
+    float x = 11.5f;
+    float y = 4.0f;
+    float z = 7.5f;
+
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D,imagen);
+
+    glRotated(180,0,0,1);
+    glPushMatrix();
+    glBegin(GL_QUADS);
+
+
+    glTexCoord2f(1.0,0.0);
+    glVertex3f(-x,y, -z);
+
+    glTexCoord2f(1.0,1.0);
+    glVertex3f(-x,-y, z);
+
+    glTexCoord2f(0.0,1.0);
+    glVertex3f(x,-y, z);
+
+    glTexCoord2f(0.0,0.0);
+    glVertex3f(x,y, -z);
+
+    glEnd();
+    glDisable(GL_TEXTURE_2D);
+
+    glPopMatrix();
+}
+
+void iterar_menu (int incremento)
+{
+
+    iterador_menu+=incremento;
+    if(iterador_menu > 3)
+    {
+        iterador_menu = 1;
+    }
+    if(iterador_menu < 1)
+    {
+        iterador_menu = 3;
+    }
+}
 void menu()
 {
     glPushMatrix();
-    glColor3d(1,0,0);
-    glScaled(3,3,3);
-    drawString(GAME_NAME, 0,0,0);
-    drawString("Press P to Play", 0,0,-1);
+//    glColor3d(1,0,0);
+//    glScaled(3,3,3);
+//    drawString(GAME_NAME, 0,0,0);
+//    drawString("Press P to Play", 0,0,-1);
+    switch (iterador_menu)
+    {
+
+    case 1:
+        cargarImagenMenu(play);
+        break;
+    case 2:
+        if (mostrar_ayuda == 0)
+        {
+            cargarImagenMenu(help);
+        }
+        else
+        {
+            cargarImagenMenu(help_text);
+        }
+        break;
+    case 3:
+        cargarImagenMenu(menu_exit);
+        break;
+    default:
+        break;
+    }
+    soundManager.stopGameMusic();
+    soundManager.playMenuMusic();
     glPopMatrix();
 }
 
@@ -1047,10 +1148,40 @@ void keyboard (unsigned char key, int x, int y)
         level = (level == 1) ? 1 : level-1; //-1 prevenir division por 0
         break;
     case 'p':
-        show_menu = 0;
+        if (show_menu == 1)
+        {
+            show_menu = 0;
+        }
         break;
+    case 27:
+        exit(1);
+        break;
+    case 13:
+        if (show_menu == 1 && mostrar_ayuda == 1)
+        {
+            mostrar_ayuda = 0;
+        }
+        else
+        {
+            if (show_menu == 1)
+            {
+                switch(iterador_menu)
+                {
+                case 1:
+                    show_menu = 0;
+                    break;
+                case 2:
+                    mostrar_ayuda = 1;
+                    break;
+                case 3:
+                    exit(1);
+                    break;
+                }
+            }
+        }
+        break;
+        glutPostRedisplay(); // Redraw the scene
     }
-    glutPostRedisplay(); // Redraw the scene
 }
 
 // called on special key pressed
@@ -1065,6 +1196,7 @@ void specialKey(int key, int x, int y)
         {
             posX -= 0.1f;
         };
+
         break;
     case GLUT_KEY_RIGHT : // Rotate on x axis (opposite)
         if ((pelr < TAM_CUADRILATERO) || (pelr >= TAM_CUADRILATERO && posX < 0))
@@ -1077,12 +1209,22 @@ void specialKey(int key, int x, int y)
         {
             posY += 0.1f;
         };
+        if(show_menu == 1)
+        {
+            iterar_menu(-1);
+            soundManager.playMenuSound();
+        }
         break;
     case GLUT_KEY_DOWN : // Rotate on y axis (opposite)
         if ((pelr < TAM_CUADRILATERO) || (pelr >= TAM_CUADRILATERO && posY > 0))
         {
             posY -= 0.1f;
         };
+        if(show_menu == 1)
+        {
+            iterar_menu(1);
+            soundManager.playMenuSound();
+        }
         break;
     }
 
@@ -1143,15 +1285,13 @@ int main(int argc, char** argv)
     glutInitWindowSize (ANCHO_VENTANA,ALTO_VENTANA); // Set the screen size
     glutInitWindowPosition(X_APARICION, Y_APARICION); // Posicion de la ventana
     glutCreateWindow(GAME_NAME);
-    init ();
+    init();
     glutReshapeFunc(reshape);
     glutDisplayFunc(display);
     glutKeyboardFunc(keyboard); // set window's key callback
     glutSpecialFunc(specialKey); // set window's to specialKey callback
     glutIdleFunc(idle);
     glutMainLoop();
-
-
 
     return EXIT_SUCCESS;
 }

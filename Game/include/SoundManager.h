@@ -17,6 +17,10 @@ class SoundManager
         void playCrashSound(void);
         void playExplotionSound(void);
         void playMenuSound(void);
+        void playMenuMusic(void);
+        void stopMenuMusic(void);
+        void playGameMusic(void);
+        void stopGameMusic(void);
 
     protected:
     private:
@@ -28,6 +32,10 @@ class SoundManager
         FSOUND_SAMPLE* crash;
         FSOUND_SAMPLE* explotion;
         FSOUND_SAMPLE* menu_select;
+        FSOUND_SAMPLE* menu_music;
+        FSOUND_SAMPLE* game_music;
+
+
 };
 
 #endif // SOUNDMANAGER_H

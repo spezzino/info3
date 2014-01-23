@@ -93,7 +93,7 @@ float distanciaEnLineaRecta(geoPoint, geoPoint);
 float posEnLineaRecta(void);
 float distancePointPlane(geoPoint,plane);
 plane planeEquation(geoPoint,geoPoint,geoPoint);
-void square2d(float,float,float,float, GLint);
+pointsObject square2d(float,float,float,float, GLint);
 void figura(int,float);
 void inicializarExtra(void);
 void drawString(char*,float,float,float);
@@ -308,7 +308,7 @@ void figura(int vertex, float size)
     {
         glPushMatrix();
         //glRotated(-(i*angle),0,0,1);
-        pointsObject points1 = square2d(edge*fixer,edge,1,i*angle);
+        pointsObject points1 = square2d(edge*fixer,edge,1,i*angle, muro.ID);
         glPopMatrix();
         drawPoints(points1);
     }

@@ -53,8 +53,8 @@ using namespace std;
  *
  *********************************************************/
 
-#define MAX_VERTICES 78000 // Max number of vertices (for each object)
-#define MAX_POLYGONS 78000 // Max number of polygons (for each object)
+#define MAX_VERTICES 70000 // Max number of vertices (for each object)
+#define MAX_POLYGONS 70000 // Max number of polygons (for each object)
 
 // Our vertex type
 typedef struct{

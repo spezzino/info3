@@ -5,15 +5,16 @@
 using namespace std;
 
 // OBJETOS A SER REPRESENTADOS
-obj_type nave, extra, tronco;
+obj_type nave, extra, tronco, heart;
 
-GLint cielo, play, help, help_text, menu_exit;
+GLint cielo, play, help, help_text, menu_exit, tablero, area_obstaculos;
 int iterador_menu = 1;
 int mostrar_ayuda = 0;
 
 
 GLfloat troncos_x[NRO_TRONCOS], troncos_y[NRO_TRONCOS];
 
+GLfloat efecto_rotacion = 1;
 
 int frameCount = 0; //  The number of frames
 float fps = 0; //  Number of frames per second
@@ -248,15 +249,17 @@ pointsObject square2d(float x, float y, float z, float angle, GLint textura_id)
     }
 
     glColor3d(1,0,0);
-    sprintf(textBuffer, "dist: %.2f",dist);
-    drawString(textBuffer, 0,0,5.8);
+    if(DEBUG)
+    {
+        sprintf(textBuffer, "dist: %.2f",dist);
+        drawString(textBuffer, 0,0,5.8);
 
-    sprintf(textBuffer, "rotZ: %.2f | rot: %.2f",rotZ,angle);
-    drawString(textBuffer, 0,0,5.0);
+        sprintf(textBuffer, "rotZ: %.2f | rot: %.2f",rotZ,angle);
+        drawString(textBuffer, 0,0,5.0);
 
-    sprintf(textBuffer, "xRel: %.2f | yRel: %.2f", xRel, yRel);
-    drawString(textBuffer, 0,0,4.2);
-
+        sprintf(textBuffer, "xRel: %.2f | yRel: %.2f", xRel, yRel);
+        drawString(textBuffer, 0,0,4.2);
+    }
     pointsObject points1 = {p1,p2,p3,p4};
     return points1;
 }
@@ -335,6 +338,7 @@ void inicializarExtra(void)
     bandera_extra_activo = 0;
     invensibilidad = 0;
 
+
 }
 /* GLUT callback Handlers */
 void drawString( char *s, float enX , float enY, float enZ)
@@ -342,37 +346,17 @@ void drawString( char *s, float enX , float enY, float enZ)
     unsigned i;
     glRasterPos3f(enX ,enY,enZ);
     for (i=0; i<strlen(s); i++)
-        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18,s[i]);
+        glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24,s[i]);
 }
 
 void tableroUsuario( double t, double k, double a)
 {
-    int posicion_en_z = POSICION_FILA;
 
-    glColor3d(1,1,0);
-    sprintf(textBuffer, "rotZ: %.1f", rotZ);
-    drawString(textBuffer,POSICION_COL_1,CERCANIA_USUARIO,posicion_en_z--);
-    sprintf(textBuffer, "k: %.2f", k);
-    drawString(textBuffer,POSICION_COL_1,CERCANIA_USUARIO,posicion_en_z--);
-    sprintf(textBuffer, "a: %.2f", a);
-    drawString(textBuffer,POSICION_COL_1,CERCANIA_USUARIO,posicion_en_z--);
-    sprintf(textBuffer, "level: %d", level);
-    drawString(textBuffer,POSICION_COL_1,CERCANIA_USUARIO,posicion_en_z--);
-    sprintf(textBuffer, "posLR: %.2f", posEnLineaRecta());
-    drawString(textBuffer,POSICION_COL_1,CERCANIA_USUARIO,posicion_en_z--);
-    // DATOS DE LA NAVE
-    posicion_en_z = POSICION_FILA;
-    sprintf(textBuffer, "posX: %.2f", posX);
-    drawString(textBuffer,POSICION_COL_2,CERCANIA_USUARIO,posicion_en_z--);
-    sprintf(textBuffer, "posY: %.2f", posY);
-    drawString(textBuffer,POSICION_COL_2,CERCANIA_USUARIO,posicion_en_z--);
-
-    // DATOS DE LA PELOTA EXTRA
-    posicion_en_z = POSICION_FILA;
-    sprintf(textBuffer, "extra_pos_x: %.2f", extra_pos_x);
-    drawString(textBuffer,POSICION_COL_3,CERCANIA_USUARIO,posicion_en_z--);
-    sprintf(textBuffer, "extra_pos_y: %.2f", extra_pos_y);
-    drawString(textBuffer,POSICION_COL_3,CERCANIA_USUARIO,posicion_en_z--);
+    glColor3d(1,0,0);
+    sprintf(textBuffer, "%d", puntos_jugador);
+    drawString(textBuffer,-4,16,4);
+    sprintf(textBuffer, "%d", vidas_jugador);
+    drawString(textBuffer,-4,16,2);
 }
 /*
 Funcion que dibuja el cuadrilatero de juego
@@ -383,7 +367,7 @@ void circle2d(float radius)
 
     // Arena
     glColor3ub(255,218,53);
-    glBindTexture(GL_TEXTURE_2D,arena.ID);
+    glBindTexture(GL_TEXTURE_2D,area_obstaculos);
     glBegin(GL_POLYGON);
     glTexCoord2f(0.0,0.0);
     glVertex3f(-MAX_VIEW_DISTANCE, -MAX_VIEW_DISTANCE,0);
@@ -483,6 +467,8 @@ void init(void)
     glEnable(GL_DEPTH_TEST); // We enable the depth test (also called z buffer)
     glPolygonMode (GL_FRONT_AND_BACK, GL_FILL); // Polygon rasterization mode (polygon filled)
 
+    //gluLookAt ( 0, -15, 8, 0, 0, 0, 0,0,1);
+
     Load3DS (&nave,"objectos_3d\\boat03.3ds");
     nave.id_texture=LoadBitmap("objectos_3d\\boat03.bmp");
     // If the last function returns -1 it means the file was not found so we exit from the program
@@ -502,6 +488,31 @@ void init(void)
         exit (0);
     }
 
+    Load3DS (&heart,"objectos_3d\\heart.3ds");
+    heart.id_texture=LoadBitmap("objectos_3d\\heart.bmp");
+    // If the last function returns -1 it means the file was not found so we exit from the program
+    if (extra.id_texture==-1)
+    {
+        MessageBox(NULL,"No se puede cargar textura del objeto extra", "Zetadeck",MB_OK | MB_ICONERROR);
+        exit (0);
+    }
+
+    tablero=LoadBitmap("image_menu\\tablero.bmp");
+    // If the last function returns -1 it means the file was not found so we exit from the program
+    if (tablero==-1)
+    {
+        MessageBox(NULL,"No se puede cargar textura del tablero", "Zetadeck",MB_OK | MB_ICONERROR);
+        exit (0);
+    }
+
+
+    area_obstaculos=LoadBitmap("textures\\desierto.bmp");
+    // If the last function returns -1 it means the file was not found so we exit from the program
+    if (area_obstaculos==-1)
+    {
+        MessageBox(NULL,"No se puede cargar textura del area_obstaculos", "Zetadeck",MB_OK | MB_ICONERROR);
+        exit (0);
+    }
     cielo=LoadBitmap("textures\\blue-sky.bmp");
     // If the last function returns -1 it means the file was not found so we exit from the program
     if (cielo==-1)
@@ -565,7 +576,7 @@ void init(void)
         exit(0); // Cargamos la textura y chequeamos por errores
     }
 
-    gluLookAt ( 0, -15, 8, 0, 0, 0, 0,0,1);
+
 }
 
 
@@ -592,6 +603,7 @@ void probabilidadExtra(void)
     srand(time(NULL) * glutGet(GLUT_ELAPSED_TIME) / 1000.0 ) ;
     // obtener un valor randomico entre 1 y 100.
     numero_probabilidad = rand()%100 + 1;
+    //numero_probabilidad = 9;
 
     //  elegir tipo de color acorde a las probabilidades de aparicion de las pelotas.
     if (numero_probabilidad <= 10)
@@ -658,12 +670,30 @@ void generarExtras(void)
         glRotated(rotZ,0.0,0.0,1.0);
         glTranslated(extra_pos_x,extra_pos_y,1);
         //glColor3d(extra_color_red, extra_color_green, extra_color_blue);
-        dibujarObjeto(extra, 1.0f);
+        if (extra_activo == 1)
+        {
+            // Dibujar corazon
+            glColor3d(extra_color_red, extra_color_green, extra_color_blue);
+            glPushMatrix();
+            glRotated(efecto_rotacion++,0.0,0.0,1.0);
+            glutSolidCube(RADIO_PELOTA_EXTRA);
+            glPopMatrix();
+        }
+        else
+        {
+            glPushMatrix();
+            glRotated(efecto_rotacion++,0.0,0.0,1.0);
+            dibujarObjeto(extra, 1.0f);
+            glPopMatrix();
+        }
+
         //glutSolidSphere(RADIO_PELOTA_EXTRA,20,20);
-        sprintf(textBuffer, "%d", extra_tiempo);
-        drawString( textBuffer, extra_pos_x, extra_pos_y, 1);
         // etiquetar pelota
         glPopMatrix();
+        sprintf(textBuffer, "%d", extra_tiempo);
+        drawString( textBuffer, extra_pos_x, extra_pos_y, 1);
+
+
         extra_tiempo--;
         return;
     }
@@ -675,7 +705,10 @@ void generarExtras(void)
         glColor3d(extra_color_red, extra_color_green, extra_color_blue);
         glRotated(rotZ,0.0,0.0,1.0);
         glTranslated(extra_pos_x,extra_pos_y, 1.5);
+        glPushMatrix();
+        glRotated(efecto_rotacion++,0.0,0.0,1.0);
         glutSolidCube(RADIO_PELOTA_EXTRA);
+        glPopMatrix();
         glPopMatrix();
 
         extra_tiempo = TIEMPO_APARICION_EXTRA;
@@ -929,28 +962,28 @@ void reducirAnguloEntre0y360(void)
         rotZ -= 360;
     };
 }
-void dibujarHorizonte(float x, float y, float z, GLint textura_id)
+void dibujarHorizonte(float x, float y, float z, GLint imagen)
 {
 
-    float amplitud_horizonte = 25.0f;
-    float distancia_horizonte = 20.0f;
-
     glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D,textura_id);
+    glBindTexture(GL_TEXTURE_2D,imagen);
 
+    //glRotated(180,0,0,1);
     glPushMatrix();
     glBegin(GL_QUADS);
+
+
     glTexCoord2f(0.0,0.0);
-    glVertex3f(-amplitud_horizonte,distancia_horizonte, 0.0);
-
-    glTexCoord2f(1.0,0.0);
-    glVertex3f(-amplitud_horizonte,distancia_horizonte, amplitud_horizonte);
-
-    glTexCoord2f(1.0,1.0);
-    glVertex3f(amplitud_horizonte,distancia_horizonte, amplitud_horizonte);
+    glVertex3f(-x, y-5, 0.0);
 
     glTexCoord2f(0.0,1.0);
-    glVertex3f(amplitud_horizonte,distancia_horizonte, 0.0);
+    glVertex3f(-x-1,y, z);
+
+    glTexCoord2f(1.0,1.0);
+    glVertex3f(x+1,y, z);
+
+    glTexCoord2f(1.0,0.0);
+    glVertex3f(x,y-5, 0.0);
 
     glEnd();
     glDisable(GL_TEXTURE_2D);
@@ -979,8 +1012,9 @@ void display(void)
     {
         soundManager.stopMenuMusic();
         soundManager.playGameMusic();
+
         reducirAnguloEntre0y360();
-        dibujarHorizonte(50.0,50.0,50.0,sky.ID);
+        dibujarHorizonte(19.0,20.0,6.5,tablero);
         glPushMatrix();
         glRotatef(rotZ,0.0,0.0,1.0);
         if(DEBUG)
@@ -989,11 +1023,9 @@ void display(void)
         }
         circle2d(TAM_CUADRILATERO);
 
-        glPopMatrix();
 
-        dibujarNave(t);
-        manejadorExtras();
-        tableroUsuario(k,t,a);
+
+
 
         figura(5,radioObstaculo1);
         figura(4,radioObstaculo2);
@@ -1025,6 +1057,12 @@ void display(void)
         {
             radioObstaculo3 -= velocidad_paredes;
         }
+        glPopMatrix();
+
+        puntos_jugador++;
+        dibujarNave(t);
+        manejadorExtras();
+        tableroUsuario(k,t,a);
 
     }
     else   //modo menu
@@ -1194,20 +1232,20 @@ void specialKey(int key, int x, int y)
     case GLUT_KEY_LEFT : // Rotate on x axis
         if ((pelr < TAM_CUADRILATERO) || (pelr >= TAM_CUADRILATERO && posX > 0))
         {
-            posX -= 0.1f;
+            posX -= velocidad_movil;
         };
 
         break;
     case GLUT_KEY_RIGHT : // Rotate on x axis (opposite)
         if ((pelr < TAM_CUADRILATERO) || (pelr >= TAM_CUADRILATERO && posX < 0))
         {
-            posX += 0.1f;
+            posX += velocidad_movil;
         };
         break;
     case GLUT_KEY_UP : // Rotate on y axis
         if ((pelr < TAM_CUADRILATERO) || (pelr >= TAM_CUADRILATERO && posY < 0))
         {
-            posY += 0.1f;
+            posY += velocidad_movil;
         };
         if(show_menu == 1)
         {
@@ -1218,7 +1256,7 @@ void specialKey(int key, int x, int y)
     case GLUT_KEY_DOWN : // Rotate on y axis (opposite)
         if ((pelr < TAM_CUADRILATERO) || (pelr >= TAM_CUADRILATERO && posY > 0))
         {
-            posY -= 0.1f;
+            posY -= velocidad_movil;
         };
         if(show_menu == 1)
         {

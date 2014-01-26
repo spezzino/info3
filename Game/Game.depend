@@ -96,10 +96,10 @@
 1390748202 source:d:\mis documentos\github\info3\game\main.cpp
 	"include/Globals.h"
 
-1390431151 source:c:\documents and settings\winxp\desktop\info3\game\main.cpp
+1390770903 source:c:\documents and settings\winxp\desktop\info3\game\main.cpp
 	"include/Globals.h"
 
-1390171370 c:\documents and settings\winxp\desktop\info3\game\include\globals.h
+1390762908 c:\documents and settings\winxp\desktop\info3\game\include\globals.h
 	<windows.h>
 	<stdio.h>
 	<iostream>
@@ -113,7 +113,7 @@
 	"texture.h"
 	"3dsloader.h"
 
-1389469739 c:\documents and settings\winxp\desktop\info3\game\include\soundmanager.h
+1390578190 c:\documents and settings\winxp\desktop\info3\game\include\soundmanager.h
 	<fmod/fmod.h>
 
 1389921440 c:\documents and settings\winxp\desktop\info3\game\include\texture.h
@@ -129,10 +129,11 @@
 	<io.h>
 	"3dsloader.h"
 
-1389921441 source:c:\documents and settings\winxp\desktop\info3\game\src\soundmanager.cpp
+1390687486 source:c:\documents and settings\winxp\desktop\info3\game\src\soundmanager.cpp
+	<stdio.h>
 	"SoundManager.h"
 
-1389921441 source:c:\documents and settings\winxp\desktop\info3\game\src\texture.cpp
+1390578191 source:c:\documents and settings\winxp\desktop\info3\game\src\texture.cpp
 	<stdio.h>
 	<windows.h>
 	<GL/glut.h>

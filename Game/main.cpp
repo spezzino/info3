@@ -45,6 +45,8 @@ double extra_color_blue = 0.0;
 
 float dist = 0.0;
 
+int camera = 0; //0: 3ra persona, 1: 1ra persona
+
 int extra_tiempo = 0;
 int extra_activo = 0;
 int tiempo_extra_activo = 0;
@@ -56,6 +58,11 @@ int puntos_jugador = 0;
 float radioObstaculo1 = 20;
 float radioObstaculo2 = 40;
 float radioObstaculo3 = 60;
+
+float anguloObstaculo1 = 0;
+float anguloObstaculo2 = 0;
+float anguloObstaculo3 = 0;
+
 
 int crashTime = 0;
 
@@ -92,13 +99,14 @@ textura agua;
 textura horizonte;
 textura sky;
 
+void changeCamera(void);
 void cuadrado(double);
 float distanciaEnLineaRecta(geoPoint, geoPoint);
 float posEnLineaRecta(void);
 float distancePointPlane(geoPoint,plane);
 plane planeEquation(geoPoint,geoPoint,geoPoint);
 pointsObject square2d(float,float,float,float, GLint);
-void figura(int,float);
+void figura(int,float, float);
 void inicializarExtra(void);
 void drawString(char*,float,float,float);
 void drawGeoPoint(geoPoint);
@@ -129,6 +137,30 @@ float getXrel(float,float,float);
 float getYrel(float,float,float);
 void dibujarObjeto(obj_type objeto_en_cuestion, GLfloat escala);
 void update_func(void);
+
+void changeCamera(){
+    if(camera == 1){
+        camera = 0;
+
+        glViewport (0, 0, (GLsizei) ANCHO_VENTANA, (GLsizei) ALTO_VENTANA); // Set the viewport
+        glMatrixMode (GL_PROJECTION); // Set the Matrix mode
+        glLoadIdentity();
+        gluPerspective(50, (GLfloat) ANCHO_VENTANA /(GLfloat) ALTO_VENTANA , 0.10, MAX_VIEW_DISTANCE);
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        gluLookAt ( 0, -15, 8, 0, 0, 0, 0,0,1);
+    }else{
+        camera = 1;
+
+        glViewport (0, 0, (GLsizei) ANCHO_VENTANA, (GLsizei) ALTO_VENTANA); // Set the viewport
+        glMatrixMode (GL_PROJECTION); // Set the Matrix mode
+        glLoadIdentity();
+        gluPerspective(50, (GLfloat) ANCHO_VENTANA /(GLfloat) ALTO_VENTANA , 0.10, MAX_VIEW_DISTANCE);
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        gluLookAt ( posX, posY-0.5, posX, posY, 1, 1, 0,0,1);
+    }
+}
 
 void inicializarTroncos(void)
 {
@@ -186,6 +218,10 @@ void drawGeoPoint(float x, float y, float z)
     }
 }
 
+void endGame(){
+    //TODO
+}
+
 pointsObject square2d(float x, float y, float z, float angle, GLint textura_id)
 {
 
@@ -224,18 +260,30 @@ pointsObject square2d(float x, float y, float z, float angle, GLint textura_id)
 
     if(dist <= RADIO_MOVIL)
     {
-        if(!(distp2p0 >= distp2p3 || distp3p0 >= distp2p3))
+        if(radioObstaculo1 < TAM_CUADRILATERO || radioObstaculo2 < TAM_CUADRILATERO || radioObstaculo3 < TAM_CUADRILATERO)
         {
-            if(DEBUG)
+            if(!(distp2p0 > distp2p3 || distp3p0 > distp2p3))
             {
-                glColor3d(1,0,0);
-                sprintf(textBuffer, "crash %d", glutGet(GLUT_ELAPSED_TIME));
-                drawString(textBuffer, -5,-5,4.8);
-            }
-            if(crashTime == 0)
-            {
-                //has crashed!!
-                crashTime = glutGet(GLUT_ELAPSED_TIME);
+                if(DEBUG)
+                {
+                    glColor3d(1,0,0);
+                    sprintf(textBuffer, "crash %d", glutGet(GLUT_ELAPSED_TIME));
+                    drawString(textBuffer, -5,-5,4.8);
+                }
+                if(crashTime == 0)
+                {
+                    //has crashed!!
+                    if(vidas_jugador == 0){
+                        soundManager.playExplotionSound();
+                        endGame();
+                    }else{
+                        soundManager.playCrashSound();
+                    }
+                    crashTime = glutGet(GLUT_ELAPSED_TIME);
+                    vidas_jugador--;
+                    printf("crashTime: %d\ndist: %.2f\ndistp2p0: %.2f\ndistp3p0: %.2f\ndistp2p3: %.2f\n",
+                           crashTime, dist, distp2p0, distp3p0, distp2p3);
+                }
             }
         }
     }
@@ -288,7 +336,7 @@ void drawPoints(pointsObject points1)
     drawGeoPoint(points1.p4);
 }
 
-void figura(int vertex, float size)
+void figura(int vertex, float size, float angulo)
 {
     int i = 0;
     float angle = 360 / vertex;
@@ -311,16 +359,15 @@ void figura(int vertex, float size)
         break;
     }
     glPushMatrix();
-    //glRotated(-90, 0,0,1); //cambiar el primer 0 por un rand fijo
 
     for(i=0; i<vertex-1; i++)
     {
         glPushMatrix();
-        //glRotated(-(i*angle),0,0,1);
-        pointsObject points1 = square2d(edge*fixer,edge,1,i*angle, muro.ID);
+        pointsObject points1 = square2d(edge*fixer,edge,1,(i*angle)+angulo, muro.ID);
         glPopMatrix();
         drawPoints(points1);
     }
+
     glPopMatrix();
 }
 
@@ -580,6 +627,9 @@ void init(void)
         exit(0); // Cargamos la textura y chequeamos por errores
     }
 
+    anguloObstaculo1 = rand() % 360;
+    anguloObstaculo2 = rand() % 360;
+    anguloObstaculo3 = rand() % 360;
 
 }
 
@@ -953,6 +1003,16 @@ void dibujarNave(double t)
     }
     dibujarObjeto(nave, 0.015f);
     glPopMatrix();
+
+    if(camera == 1){
+        glViewport (0, 0, (GLsizei) ANCHO_VENTANA, (GLsizei) ALTO_VENTANA); // Set the viewport
+        glMatrixMode (GL_PROJECTION); // Set the Matrix mode
+        glLoadIdentity();
+        gluPerspective(50, (GLfloat) ANCHO_VENTANA /(GLfloat) ALTO_VENTANA , 0.10, MAX_VIEW_DISTANCE);
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        gluLookAt ( posX, posY-0.5, 1, posX, posY, 1, 0,0,1);
+    }
 }
 
 void reducirAnguloEntre0y360(void)
@@ -1019,7 +1079,7 @@ void display(void)
         soundManager.playGameMusic();
 
         reducirAnguloEntre0y360();
-        dibujarHorizonte(19.0,20.0,6.5,tablero);
+        dibujarHorizonte(29.0,30.0,6.5,tablero);
         glPushMatrix();
         glRotatef(rotZ,0.0,0.0,1.0);
         if(DEBUG)
@@ -1028,35 +1088,34 @@ void display(void)
         }
         circle2d(TAM_CUADRILATERO);
 
+        figura(5,radioObstaculo1,anguloObstaculo1);
+        figura(4,radioObstaculo2,anguloObstaculo2);
+        figura(6,radioObstaculo3,anguloObstaculo3);
 
-
-
-
-        figura(5,radioObstaculo1);
-        figura(4,radioObstaculo2);
-        figura(6,radioObstaculo3);
-
-        if(radioObstaculo1 < 1.2)
+        if(radioObstaculo1 < 0.5)
         {
             radioObstaculo1 = 60;
+            anguloObstaculo1 = rand() % 360;
         }
         else
         {
             radioObstaculo1 -= velocidad_paredes;
         }
 
-        if(radioObstaculo2 < 1.2)
+        if(radioObstaculo2 < 0.5)
         {
             radioObstaculo2 = 60;
+            anguloObstaculo2 = rand() % 360;
         }
         else
         {
             radioObstaculo2 -= velocidad_paredes;
         }
 
-        if(radioObstaculo3 < 1.2)
+        if(radioObstaculo3 < 0.5)
         {
             radioObstaculo3 = 60;
+            anguloObstaculo3 = rand() % 360;
         }
         else
         {
@@ -1175,6 +1234,9 @@ void keyboard (unsigned char key, int x, int y)
 {
     switch (key)     // x,X,y,Y,z,Z uses the glRotatef() function
     {
+    case 'c':
+        changeCamera();
+        break;
     case 'z': // Rotates screen on z axis
         //rotacion Antihoraria
         key_state[key] = true;

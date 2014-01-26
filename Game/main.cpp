@@ -11,6 +11,7 @@ GLint cielo, play, help, help_text, menu_exit, tablero, area_obstaculos;
 int iterador_menu = 1;
 int mostrar_ayuda = 0;
 
+bool key_state[256] = { false };
 
 GLfloat troncos_x[NRO_TRONCOS], troncos_y[NRO_TRONCOS];
 
@@ -116,7 +117,9 @@ void reducirAnguloEntre0y360(void);
 void display(void);
 void reshape (int,int);
 void keyboard (unsigned char,int,int);
+void keyboardRelease (unsigned char key, int x, int y);
 void specialKey(int,int,int);
+void specialKeyRelease(int key, int x, int y);
 static void idle(void);
 int cargarTGA(char *,textura *);
 void loadObj(char *);
@@ -125,6 +128,7 @@ void calculateFPS(void);
 float getXrel(float,float,float);
 float getYrel(float,float,float);
 void dibujarObjeto(obj_type objeto_en_cuestion, GLfloat escala);
+void update_func(void);
 
 void inicializarTroncos(void)
 {
@@ -1002,6 +1006,7 @@ void display(void)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     //glMatrixMode(GL_MODELVIEW);
 
+    update_func();
     if(DEBUG)
     {
         sprintf(textBuffer, "FPS: %4.2f", fps);
@@ -1063,7 +1068,6 @@ void display(void)
         dibujarNave(t);
         manejadorExtras();
         tableroUsuario(k,t,a);
-
     }
     else   //modo menu
     {
@@ -1173,10 +1177,10 @@ void keyboard (unsigned char key, int x, int y)
     {
     case 'z': // Rotates screen on z axis
         //rotacion Antihoraria
-        rotZ -= 1;
+        key_state[key] = true;
         break;
     case 'x': // Opposite way
-        rotZ += 1;
+        key_state[key] = true;
         // rotacion Horaria
         break;
     case '+':
@@ -1221,53 +1225,154 @@ void keyboard (unsigned char key, int x, int y)
         glutPostRedisplay(); // Redraw the scene
     }
 }
+// This function is used for the navigation keys
+void keyboardRelease (unsigned char key, int x, int y)
+{
+    switch (key)     // x,X,y,Y,z,Z uses the glRotatef() function
+    {
+    case 'z': // Rotates screen on z axis
+        //rotacion Antihoraria
+        key_state[key] = false;
+        break;
+    case 'x': // Opposite way
+        key_state[key] = false;
+        // rotacion Horaria
+        break;
+    }
+    glutPostRedisplay(); // Redraw the scene
+}
+
+void update_func()
+{
+    const float pelr = posEnLineaRecta();
+    Sleep(DELAY_GAME);
+    if(key_state['z'] == true)
+    {
+        // rotate left
+        switch(show_menu)
+        {
+        case 0:
+            // Juego
+            rotZ -= 1;
+            break;
+        case 1:
+            break;
+        default:
+            break;
+        }
+
+    }
+    if(key_state['x'] == true)
+    {
+        // rotate left
+        switch(show_menu)
+        {
+        case 0:
+            // Juego
+            rotZ += 1;
+            break;
+        case 1:
+            break;
+        default:
+            break;
+        }
+
+    }
+
+    if(key_state[GLUT_KEY_LEFT] == true)
+    {
+        // move left
+        switch(show_menu)
+        {
+        case 0:
+            // Juego
+            if ((pelr < TAM_CUADRILATERO) || (pelr >= TAM_CUADRILATERO && posX > 0))
+            {
+                posX -= velocidad_movil;
+            };
+            break;
+        case 1:
+            break;
+        default:
+            break;
+        }
+
+    }
+
+    if(key_state[GLUT_KEY_RIGHT] == true)
+    {
+        // move right
+        switch(show_menu)
+        {
+        case 0:
+            // Juego
+            if ((pelr < TAM_CUADRILATERO) || (pelr >= TAM_CUADRILATERO && posX < 0))
+            {
+                posX += velocidad_movil;
+            };
+            break;
+        case 1:
+            break;
+        default:
+            break;
+        }
+    }
+
+    if(key_state[GLUT_KEY_UP] == true)
+    {
+        // move up
+        switch(show_menu)
+        {
+        case 0:
+            // Juego
+            if ((pelr < TAM_CUADRILATERO) || (pelr >= TAM_CUADRILATERO && posY < 0))
+            {
+                posY += velocidad_movil;
+            };
+            break;
+        case 1:
+            // Menu
+            iterar_menu(-1);
+            soundManager.playMenuSound();
+            Sleep(DELAY_MENU);
+            break;
+        default:
+            break;
+        }
+    }
+
+    if(key_state[GLUT_KEY_DOWN] == true)
+    {
+        // move down
+        switch(show_menu)
+        {
+        case 0:
+            // Juego
+            if ((pelr < TAM_CUADRILATERO) || (pelr >= TAM_CUADRILATERO && posY > 0))
+            {
+                posY -= velocidad_movil;
+            };
+            break;
+        case 1:
+            // Menu
+            iterar_menu(1);
+            soundManager.playMenuSound();
+            Sleep(DELAY_MENU);
+            break;
+        default:
+            break;
+        }
+    }
+}
 
 // called on special key pressed
 void specialKey(int key, int x, int y)
 {
-    const float pelr = posEnLineaRecta();
-    // Check which key is pressed
-    switch(key)
-    {
-    case GLUT_KEY_LEFT : // Rotate on x axis
-        if ((pelr < TAM_CUADRILATERO) || (pelr >= TAM_CUADRILATERO && posX > 0))
-        {
-            posX -= velocidad_movil;
-        };
-
-        break;
-    case GLUT_KEY_RIGHT : // Rotate on x axis (opposite)
-        if ((pelr < TAM_CUADRILATERO) || (pelr >= TAM_CUADRILATERO && posX < 0))
-        {
-            posX += velocidad_movil;
-        };
-        break;
-    case GLUT_KEY_UP : // Rotate on y axis
-        if ((pelr < TAM_CUADRILATERO) || (pelr >= TAM_CUADRILATERO && posY < 0))
-        {
-            posY += velocidad_movil;
-        };
-        if(show_menu == 1)
-        {
-            iterar_menu(-1);
-            soundManager.playMenuSound();
-        }
-        break;
-    case GLUT_KEY_DOWN : // Rotate on y axis (opposite)
-        if ((pelr < TAM_CUADRILATERO) || (pelr >= TAM_CUADRILATERO && posY > 0))
-        {
-            posY -= velocidad_movil;
-        };
-        if(show_menu == 1)
-        {
-            iterar_menu(1);
-            soundManager.playMenuSound();
-        }
-        break;
-    }
-
-    glutPostRedisplay(); // Redraw the scene
-
+    key_state[key] = true;
+}
+void specialKeyRelease(int key, int x, int y)
+{
+    key_state[key] = false;
 }
 
 float posEnLineaRecta(void)
@@ -1326,9 +1431,17 @@ int main(int argc, char** argv)
     init();
     glutReshapeFunc(reshape);
     glutDisplayFunc(display);
-    glutKeyboardFunc(keyboard); // set window's key callback
-    glutSpecialFunc(specialKey); // set window's to specialKey callback
     glutIdleFunc(idle);
+
+    glutKeyboardFunc(keyboard); // set window's key callback
+    glutKeyboardUpFunc(keyboardRelease);
+    glutSpecialFunc(specialKey); // set window's to specialKey callback
+    glutSpecialUpFunc(specialKeyRelease);
+//    glutKeyboardFunc(key_down_func);
+//    glutKeyboardUpFunc(key_up_func);
+
+    glutIgnoreKeyRepeat(true);
+
     glutMainLoop();
 
     return EXIT_SUCCESS;

@@ -38,6 +38,8 @@ using namespace std;
 #define TIEMPO_VALIDEZ_EXTRA_VELOCIDAD_MURO 1500
 #define MAX_VIEW_DISTANCE 35.0
 #define GAME_NAME "OpenGL Game"
+#define DELAY_GAME 10
+#define DELAY_MENU 90
 
 #define NRO_TRONCOS 10
 

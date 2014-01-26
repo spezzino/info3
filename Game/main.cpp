@@ -20,7 +20,7 @@ int frameCount = 0; //  The number of frames
 float fps = 0; //  Number of frames per second
 int currentTime = 0, previousTime = 0; //  currentTime - previousTime is the time elapsed between every call of the Idle function
 
-int show_menu = 0; //1 se muestra el menu principal, 0 empieza el juego
+int show_menu = 1; //1 se muestra el menu principal, 0 empieza el juego
 
 GLfloat rotZ = 0.0f; // Rotate screen on z axis
 GLfloat posX = 0.0f; //posicion del vehiculo eje X
@@ -65,7 +65,7 @@ float anguloObstaculo3 = 0;
 
 int crashTime = 0;
 
-GLfloat x_tablero, y_tablero, z_tablero;
+
 typedef struct
 {
     float x;
@@ -134,14 +134,15 @@ float getYrel(float,float,float);
 void dibujarObjeto(obj_type objeto_en_cuestion, GLfloat escala);
 void update_func(void);
 void dibujarHorizonte(float x, float y, float z, GLint imagen);
-void dibujarTablero( GLint imagen);
+void dibujarTablero( GLint imagen, float x_tablero, float y_tablero, float z_tablero, float x_inc, float y_inc, float z_inc);
 void iterar_camara (void);
 
 
-void changeCamera(){
-    if(camera == 1){
+void changeCamera()
+{
+    if(camera == 1)
+    {
         camera = 0;
-
         glViewport (0, 0, (GLsizei) ANCHO_VENTANA, (GLsizei) ALTO_VENTANA); // Set the viewport
         glMatrixMode (GL_PROJECTION); // Set the Matrix mode
         glLoadIdentity();
@@ -149,9 +150,10 @@ void changeCamera(){
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
         gluLookAt ( 0, -15, 8, 0, 0, 0, 0,0,1);
-    }else{
+    }
+    else
+    {
         camera = 1;
-
         glViewport (0, 0, (GLsizei) ANCHO_VENTANA, (GLsizei) ALTO_VENTANA); // Set the viewport
         glMatrixMode (GL_PROJECTION); // Set the Matrix mode
         glLoadIdentity();
@@ -160,17 +162,6 @@ void changeCamera(){
         glLoadIdentity();
         gluLookAt ( posX, posY-0.5, posX, posY, 1, 1, 0,0,1);
     }
-}
-
-void inicializarTroncos(void)
-{
-
-    for(int i = 0; i< NRO_TRONCOS ; i++)
-    {
-        troncos_x[i] = rand()%40 + (TAM_CUADRILATERO + 2);
-        troncos_y[i] = rand()%40 + (TAM_CUADRILATERO + 2);
-    }
-
 }
 
 float distancePointPlane(geoPoint p0, plane p)
@@ -219,7 +210,8 @@ void drawGeoPoint(float x, float y, float z)
     }
 }
 
-void endGame(){
+void endGame()
+{
     //TODO
 }
 
@@ -274,10 +266,13 @@ pointsObject square2d(float x, float y, float z, float angle, GLint textura_id)
                 if(crashTime == 0)
                 {
                     //has crashed!!
-                    if(vidas_jugador == 0){
+                    if(vidas_jugador == 0)
+                    {
                         soundManager.playExplotionSound();
                         endGame();
-                    }else{
+                    }
+                    else
+                    {
                         soundManager.playCrashSound();
                     }
                     crashTime = glutGet(GLUT_ELAPSED_TIME);
@@ -404,12 +399,47 @@ void drawString( char *s, float enX , float enY, float enZ)
 
 void tableroUsuario()
 {
-    dibujarTablero(tablero);
-    glColor3d(1,0,0);
-    sprintf(textBuffer, "%d", puntos_jugador);
-    drawString(textBuffer,X_CAMARA - 0.5,Y_CAMARA + 1.5, Z_CAMARA - 1.76);
-    sprintf(textBuffer, "%d", vidas_jugador);
-    drawString(textBuffer,X_CAMARA + 0.7,Y_CAMARA + 1.5, Z_CAMARA - 1.76);
+    if (camera == 0)
+    {
+        float x_tablero = X_CAMARA + 4.5;
+        float y_tablero = Y_CAMARA + 4.5;
+        float z_tablero = Z_CAMARA - 6.0;
+        float x_inc = 0.4;
+        float y_inc = 0.9;
+        float z_inc = 0.2;
+
+        dibujarTablero(tablero, x_tablero, y_tablero, z_tablero, x_inc, y_inc , z_inc);
+        glColor3d(1,0,0);
+        sprintf(textBuffer, "%d", puntos_jugador);
+        drawString(textBuffer,X_CAMARA - 0.5,Y_CAMARA + 1.5, Z_CAMARA - 1.76);
+        sprintf(textBuffer, "%d", vidas_jugador);
+        drawString(textBuffer,X_CAMARA + 0.7,Y_CAMARA + 1.5, Z_CAMARA - 1.76);
+    }
+    if (camera == 1)
+    {
+        int multiplicador_x = 1;
+        int multiplicador_y = 1;
+        if (posX < 0){
+            multiplicador_x = -1;
+        }
+        if (posY < 0){
+            multiplicador_y = -1;
+        }
+        float x_tablero = posX + (multiplicador_x *2.0f);
+        float y_tablero = posY + (multiplicador_y * 1.0f);
+        float z_tablero = 0.5f;
+        float x_inc = 0.0f;
+        float y_inc = 0.0f;
+        float z_inc = 0.2f;
+
+        dibujarTablero(tablero, x_tablero, y_tablero, z_tablero, x_inc, y_inc , z_inc);
+        glColor3d(1,0,0);
+        sprintf(textBuffer, "%d", puntos_jugador);
+        drawString(textBuffer,posX-5,y_tablero - 0.5, 9);
+        sprintf(textBuffer, "%d", vidas_jugador);
+        drawString(textBuffer,posX + 5,y_tablero - 0.5, 9);
+    }
+
 }
 /*
 Funcion que dibuja el cuadrilatero de juego
@@ -706,7 +736,7 @@ void generarExtras(void)
         // dibujar pelota
         glPushMatrix();
         glRotated(rotZ,0.0,0.0,1.0);
-        glTranslated(extra_pos_x,extra_pos_y,1);
+        glTranslated(extra_pos_x,extra_pos_y,0.2);
         glColor3d(extra_color_red, extra_color_green, extra_color_blue);
         glPushMatrix();
         glRotated(efecto_rotacion++,0.0,0.0,1.0);
@@ -723,7 +753,7 @@ void generarExtras(void)
         // dibujar pelota
         glPushMatrix();
         glRotated(rotZ,0.0,0.0,1.0);
-        glTranslated(extra_pos_x,extra_pos_y,1);
+        glTranslated(extra_pos_x,extra_pos_y,0.2);
         glColor3d(extra_color_red, extra_color_green, extra_color_blue);
         glPushMatrix();
         glRotated(efecto_rotacion++,0.0,0.0,1.0);
@@ -968,9 +998,11 @@ void dibujarNave(double t)
         pelotitasExtrasAnimacion(glutGet(GLUT_ELAPSED_TIME) / 1000.0, 1, 0 , 0.25, 0.5);
     }
     dibujarObjeto(nave, 0.015f);
+
     glPopMatrix();
 
-    if(camera == 1){
+    if(camera == 1)
+    {
         glViewport (0, 0, (GLsizei) ANCHO_VENTANA, (GLsizei) ALTO_VENTANA); // Set the viewport
         glMatrixMode (GL_PROJECTION); // Set the Matrix mode
         glLoadIdentity();
@@ -979,6 +1011,8 @@ void dibujarNave(double t)
         glLoadIdentity();
         gluLookAt ( posX, posY-0.5, 1, posX, posY, 1, 0,0,1);
     }
+
+
 }
 
 void reducirAnguloEntre0y360(void)
@@ -994,42 +1028,62 @@ void reducirAnguloEntre0y360(void)
 }
 void dibujarHorizonte(float x, float y, float z, GLint imagen)
 {
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D,imagen);
-    glPushMatrix();
-    glBegin(GL_QUADS);
-    glTexCoord2f(0.0,0.0);
-    glVertex3f(-x, y-5, 0.0);
-    glTexCoord2f(0.0,1.0);
-    glVertex3f(-x-1,y, z);
-    glTexCoord2f(1.0,1.0);
-    glVertex3f(x+1,y, z);
-    glTexCoord2f(1.0,0.0);
-    glVertex3f(x,y-5, 0.0);
-    glEnd();
-    glDisable(GL_TEXTURE_2D);
-    glPopMatrix();
+    if (camera == 0)
+    {
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D,imagen);
+        glPushMatrix();
+        glBegin(GL_QUADS);
+        glTexCoord2f(0.0,0.0);
+        glVertex3f(-x, y-5, 0.0);
+        glTexCoord2f(0.0,1.0);
+        glVertex3f(-x-2,y, z);
+        glTexCoord2f(1.0,1.0);
+        glVertex3f(x+2,y, z);
+        glTexCoord2f(1.0,0.0);
+        glVertex3f(x,y-5, 0.0);
+        glEnd();
+        glDisable(GL_TEXTURE_2D);
+        glPopMatrix();
+    }
+    if (camera == 1)
+    {
+        x += abs(posX);
+        y += abs(posY);
+
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D,imagen);
+        glPushMatrix();
+        glBegin(GL_QUADS);
+        glTexCoord2f(0.0,0.0);
+        glVertex3f(-x, y, 0.0);
+        glTexCoord2f(0.0,1.0);
+        glVertex3f(-x,y, z);
+        glTexCoord2f(1.0,1.0);
+        glVertex3f(x,y, z);
+        glTexCoord2f(1.0,0.0);
+        glVertex3f(x,y, 0.0);
+        glEnd();
+        glDisable(GL_TEXTURE_2D);
+        glPopMatrix();
+    }
 }
 
-void dibujarTablero( GLint imagen)
+void dibujarTablero( GLint imagen, float x_tablero, float y_tablero, float z_tablero, float x_inc, float y_inc, float z_inc)
 {
-    x_tablero = X_CAMARA + 4.5;
-    y_tablero = Y_CAMARA + 4.5;
-    z_tablero = Z_CAMARA - 5.8;
-
 
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D,imagen);
     glPushMatrix();
     glBegin(GL_QUADS);
     glTexCoord2f(0.0,0.0);
-    glVertex3f(-(x_tablero), y_tablero , z_tablero - 0.2 );
+    glVertex3f(-(x_tablero), y_tablero , z_tablero);
     glTexCoord2f(0.0,1.0);
-    glVertex3f(-(x_tablero + 0.4) , y_tablero + 0.9 , z_tablero);
+    glVertex3f(-(x_tablero + x_inc) , y_tablero + y_inc , z_tablero + z_inc);
     glTexCoord2f(1.0,1.0);
-    glVertex3f( (x_tablero + 0.4)  , y_tablero + 0.9 , z_tablero);
+    glVertex3f( (x_tablero + x_inc)  , y_tablero + y_inc  , z_tablero + z_inc);
     glTexCoord2f(1.0,0.0);
-    glVertex3f( (x_tablero)  , y_tablero , z_tablero - 0.2);
+    glVertex3f( (x_tablero)  , y_tablero , z_tablero);
     glEnd();
     glDisable(GL_TEXTURE_2D);
     glPopMatrix();
@@ -1059,7 +1113,7 @@ void display(void)
 
         reducirAnguloEntre0y360();
 
-        dibujarHorizonte(19.0,20.0,6.5,horizonte);
+
 
         glPushMatrix();
         glRotatef(rotZ,0.0,0.0,1.0);
@@ -1106,6 +1160,7 @@ void display(void)
 
         puntos_jugador++;
         dibujarNave(t);
+        dibujarHorizonte(20.0,20.0,6.5,horizonte);
         manejadorExtras();
         tableroUsuario();
     }
@@ -1163,35 +1218,10 @@ void iterar_menu (int incremento)
     }
 }
 
-void iterar_camara (void)
-{
-
-    iterador_camara+=1;
-    if(iterador_camara > 2)
-    {
-        iterador_camara = 1;
-    }
-    if(iterador_camara < 1)
-    {
-        iterador_camara = 2;
-    }
-    switch(iterador_camara)
-    {
-    case 1:
-        gluLookAt ( X_CAMARA, Y_CAMARA, Z_CAMARA, 0, 0, 0, 0,0,1);
-        break;
-    case 2:
-        gluLookAt ( posX, posY, 1, 0, 0, 0, 0,0,1);
-        break;
-    }
-}
 void menu()
 {
     glPushMatrix();
-//    glColor3d(1,0,0);
-//    glScaled(3,3,3);
-//    drawString(GAME_NAME, 0,0,0);
-//    drawString("Press P to Play", 0,0,-1);
+
     switch (iterador_menu)
     {
 
@@ -1257,9 +1287,6 @@ void keyboard (unsigned char key, int x, int y)
     case 'x': // Opposite way
         key_state[key] = true;
         // rotacion Horaria
-        break;
-    case 'c': // Cambia camara
-        iterar_camara();
         break;
     case '+':
         level = (level == MAX_LEVEL-1) ? MAX_LEVEL-1 : level+1; //-1 prevenir division por 0

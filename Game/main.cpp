@@ -137,8 +137,7 @@ void dibujarHorizonte(float x, float y, float z, GLint imagen);
 void dibujarTablero( GLint imagen);
 void iterar_camara (void);
 
-<<<<<<< HEAD
-=======
+
 void changeCamera(){
     if(camera == 1){
         camera = 0;
@@ -173,7 +172,7 @@ void inicializarTroncos(void)
     }
 
 }
->>>>>>> e12b26a10a12c5085af462e1e5a2475176fedbb2
+
 float distancePointPlane(geoPoint p0, plane p)
 {
     float distance = 0.0f;
@@ -1059,11 +1058,9 @@ void display(void)
         soundManager.playGameMusic();
 
         reducirAnguloEntre0y360();
-<<<<<<< HEAD
+
         dibujarHorizonte(19.0,20.0,6.5,horizonte);
-=======
-        dibujarHorizonte(29.0,30.0,6.5,tablero);
->>>>>>> e12b26a10a12c5085af462e1e5a2475176fedbb2
+
         glPushMatrix();
         glRotatef(rotZ,0.0,0.0,1.0);
         if(DEBUG)

@@ -41,13 +41,12 @@ using namespace std;
 #define DELAY_GAME 10
 #define DELAY_MENU 90
 
-#define NRO_TRONCOS 10
-
-#define POSICION_COL_1 -12
-#define POSICION_COL_2 -2
-#define POSICION_COL_3 8
-#define POSICION_FILA -2
 #define CERCANIA_USUARIO -5
+
+#define X_CAMARA 0
+#define Y_CAMARA -15
+#define Z_CAMARA 8
+
 
 /**********************************************************
  *

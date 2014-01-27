@@ -7,7 +7,7 @@ using namespace std;
 // OBJETOS A SER REPRESENTADOS
 obj_type nave, extra;
 
-GLint horizonte, play, help, help_text, menu_exit, tablero, area_obstaculos, area_juego;
+GLint horizonte, play, help, help_text, menu_exit, tablero, area_obstaculos, area_juego, gameOver;
 int iterador_menu = 1;
 int iterador_camara = 1;
 int mostrar_ayuda = 0;
@@ -136,7 +136,7 @@ void update_func(void);
 void dibujarHorizonte(float x, float y, float z, GLint imagen);
 void dibujarTablero( GLint imagen, float x_tablero, float y_tablero, float z_tablero, float x_inc, float y_inc, float z_inc);
 void iterar_camara (void);
-
+void cargarImagenMenu(int imagen);
 
 void changeCamera()
 {
@@ -213,6 +213,38 @@ void drawGeoPoint(float x, float y, float z)
 void endGame()
 {
     //TODO
+    glColor3d(1,0,0);
+
+    float x = 11.5f;
+    float y = 4.0f;
+    float z = 7.5f;
+
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D,gameOver);
+
+    //glRotated(180,0,0,1);
+    glPushMatrix();
+    glBegin(GL_QUADS);
+
+
+    glTexCoord2f(0.0,0.0);
+    glVertex3f(-x,-y, -z);
+
+    glTexCoord2f(0.0,1.0);
+    glVertex3f(-x,y,z);
+
+    glTexCoord2f(1.0,1.0);
+    glVertex3f(x,y,z);
+
+    glTexCoord2f(1.0,0.0);
+    glVertex3f(x,-y, -z);
+
+    glEnd();
+    glDisable(GL_TEXTURE_2D);
+
+    glPopMatrix();
+    sprintf(textBuffer, "%d", puntos_jugador);
+    drawString(textBuffer,1,-5,3);
 }
 
 pointsObject square2d(float x, float y, float z, float angle, GLint textura_id)
@@ -628,7 +660,8 @@ void init(void)
         exit (0);
     }
 
-    help_text=LoadBitmap("image_menu\\text-help.bmp");
+    //help_text=LoadBitmap("image_menu\\text-help.bmp");
+    help_text=LoadBitmap("image_menu\\gameOver.bmp");
     // If the last function returns -1 it means the file was not found so we exit from the program
     if (help_text==-1)
     {
@@ -643,6 +676,14 @@ void init(void)
         exit (0);
     }
 
+
+    gameOver=LoadBitmap("image_menu\\gameOver.bmp");
+    // If the last function returns -1 it means the file was not found so we exit from the program
+    if (gameOver==-1)
+    {
+        MessageBox(NULL,"No se puede cargar imagen gameOver", "Zetadeck",MB_OK | MB_ICONERROR);
+        exit (0);
+    }
     if(!cargarTGA("textures/muro.tga", &muro))
     {
         printf("Error cargando textura\n");

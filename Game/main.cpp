@@ -55,6 +55,10 @@ int invensibilidad = 0;
 int vidas_jugador = 1;
 int puntos_jugador = 0;
 
+float tiempo_inicio = 0.0f;
+int bandera_toma_tiempo = 0;
+float tiempo_juego = 0.0f;
+
 float radioObstaculo1 = 20;
 float radioObstaculo2 = 40;
 float radioObstaculo3 = 60;
@@ -214,13 +218,17 @@ void drawGeoPoint(float x, float y, float z)
 
 void endGame()
 {
-    camera = 0;
+    if (camera == 1){
+            changeCamera();
+    }else{
+
     //TODO
     glColor3d(1,0,0);
 
     float x = 11.5f;
     float y = 4.0f;
     float z = 7.5f;
+
 
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D,gameOver);
@@ -249,6 +257,17 @@ void endGame()
 
     sprintf(textBuffer, "%d", puntos_jugador);
     drawString(textBuffer,1,-5,3);
+
+    if (bandera_toma_tiempo == 0)
+    {
+        tiempo_juego = (glutGet(GLUT_ELAPSED_TIME) / 1000.0) - tiempo_inicio;
+        bandera_toma_tiempo = 1;
+    }
+
+
+    sprintf(textBuffer, "%.0f sec.", tiempo_juego);
+    drawString(textBuffer,1,-5,2);
+    }
 }
 
 pointsObject square2d(float x, float y, float z, float angle, GLint textura_id)
@@ -721,6 +740,7 @@ void init(void)
 
 void inicializarJuego()
 {
+    inicializarExtra();
     rotZ = 0.0f; // Rotate screen on z axis
     posX = 0.0f; //posicion del vehiculo eje X
     posY = 0.0f; //posicion del vehiculo eje Y
@@ -737,7 +757,7 @@ void inicializarJuego()
     radioObstaculo2 = 40;
     radioObstaculo3 = 60;
 
-    vidas_jugador = 3;
+    vidas_jugador = 1;
     velocidad_movil = 0.1f;
     velocidad_paredes = 0.1f;
 
@@ -747,6 +767,10 @@ void inicializarJuego()
     extra_color_red = 0.0;
     extra_color_green = 0.0;
     extra_color_blue = 0.0;
+
+    puntos_jugador = 0;
+    tiempo_inicio = glutGet(GLUT_ELAPSED_TIME) / 1000.0;
+    bandera_toma_tiempo = 0;
 }
 
 void pelotitasExtrasAnimacion(double t, float x, float y, float z, float radio)
@@ -1437,6 +1461,7 @@ void keyboard (unsigned char key, int x, int y)
     case 'p':
         if (show_menu == 1)
         {
+            //tiempo_inicio = glutGet(GLUT_ELAPSED_TIME) / 1000.0;
             show_menu = 0;
         }
         break;

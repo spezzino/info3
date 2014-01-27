@@ -15,8 +15,8 @@ SoundManager::SoundManager()
     crash = FSOUND_Sample_Load(FSOUND_FREE,"audio/crash.wav",0,0,0);
     explotion = FSOUND_Sample_Load(FSOUND_FREE,"audio/explosion.wav",0,0,0);
     menu_select = FSOUND_Sample_Load(FSOUND_FREE,"audio/menu_select.wav",0,0,0);
-    menu_music = FSOUND_Sample_Load(FSOUND_FREE,"audio/menu_music.mp3",0,0,0);
-    game_music = FSOUND_Sample_Load(FSOUND_FREE,"audio/game_music.mp3",0,0,0);
+//    menu_music = FSOUND_Sample_Load(FSOUND_FREE,"audio/menu_music.mp3",0,0,0);
+//    game_music = FSOUND_Sample_Load(FSOUND_FREE,"audio/game_music.mp3",0,0,0);
 }
 
 SoundManager::~SoundManager()

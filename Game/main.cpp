@@ -23,18 +23,18 @@ int currentTime = 0, previousTime = 0; //  currentTime - previousTime is the tim
 int show_menu = 1; //1 se muestra el menu principal, 0 empieza el juego
 int game_over = 0;
 
-GLfloat rotZ = 0.0f; // Rotate screen on z axis
-GLfloat posX = 0.0f; //posicion del vehiculo eje X
-GLfloat posY = 0.0f; //posicion del vehiculo eje Y
+GLfloat rotZ; // Rotate screen on z axis
+GLfloat posX; //posicion del vehiculo eje X
+GLfloat posY; //posicion del vehiculo eje Y
 
-int level = 1; //nivel de juego (acelera el juego a medida que aumenta)
-int points = 0; //puntaje
-int multiplier = 1; //multiplicador del puntaje
+int level; //nivel de juego (acelera el juego a medida que aumenta)
+int points; //puntaje
+int multiplier; //multiplicador del puntaje
 
 char textBuffer[30];
 
-GLfloat velocidad_movil = 0.1f;
-GLfloat velocidad_paredes = 0.1f;
+GLfloat velocidad_movil;
+GLfloat velocidad_paredes;
 
 GLfloat extra_pos_x = 0.0f;
 GLfloat extra_pos_y = 0.0f;
@@ -52,7 +52,7 @@ int extra_activo = 0;
 int tiempo_extra_activo = 0;
 int bandera_extra_activo = 0;
 int invensibilidad = 0;
-int vidas_jugador = 3;
+int vidas_jugador = 1;
 int puntos_jugador = 0;
 
 float radioObstaculo1 = 20;
@@ -111,6 +111,7 @@ void drawGeoPoint(float,float,float);
 void tableroUsuario();
 void circle2d(float);
 void init(void);
+void inicializarJuego(void);
 void pelotitasExtrasAnimacion(double t, float x, float y, float z, float radio);
 void probabilidadExtra(void);
 void generarExtras(void);
@@ -305,10 +306,10 @@ pointsObject square2d(float x, float y, float z, float angle, GLint textura_id)
                         sprintf(textBuffer, "crash %d", glutGet(GLUT_ELAPSED_TIME));
                         drawString(textBuffer, -5,-5,4.8);
                     }
-                    if(crashTime == 0)
+                    if(crashTime == 0 && invensibilidad == 0)
                     {
                         //has crashed!!
-                        if(vidas_jugador == 0)
+                        if(vidas_jugador == 1)
                         {
                             soundManager.playExplotionSound();
                             game_over = 1;
@@ -316,11 +317,11 @@ pointsObject square2d(float x, float y, float z, float angle, GLint textura_id)
                         else
                         {
                             soundManager.playCrashSound();
+                            crashTime = glutGet(GLUT_ELAPSED_TIME);
+                            vidas_jugador--;
+                            printf("crashTime: %d\ndist: %.2f\ndistp2p0: %.2f\ndistp3p0: %.2f\ndistp2p3: %.2f\n",
+                                   crashTime, dist, distp2p0, distp3p0, distp2p3);
                         }
-                        crashTime = glutGet(GLUT_ELAPSED_TIME);
-                        vidas_jugador--;
-                        printf("crashTime: %d\ndist: %.2f\ndistp2p0: %.2f\ndistp3p0: %.2f\ndistp2p3: %.2f\n",
-                               crashTime, dist, distp2p0, distp3p0, distp2p3);
                     }
                 }
             }
@@ -716,13 +717,36 @@ void init(void)
         printf("Error cargando textura\n");
         exit(0); // Cargamos la textura y chequeamos por errores
     }
+}
+
+void inicializarJuego(){
+    rotZ = 0.0f; // Rotate screen on z axis
+    posX = 0.0f; //posicion del vehiculo eje X
+    posY = 0.0f; //posicion del vehiculo eje Y
+
+    level = 1; //nivel de juego (acelera el juego a medida que aumenta)
+    points = 0; //puntaje
+    multiplier = 1; //multiplicador del puntaje
 
     anguloObstaculo1 = rand() % 360;
     anguloObstaculo2 = rand() % 360;
     anguloObstaculo3 = rand() % 360;
 
-}
+    radioObstaculo1 = 20;
+    radioObstaculo2 = 40;
+    radioObstaculo3 = 60;
 
+    vidas_jugador = 3;
+    velocidad_movil = 0.1f;
+    velocidad_paredes = 0.1f;
+
+    extra_pos_x = 0.0f;
+    extra_pos_y = 0.0f;
+
+    extra_color_red = 0.0;
+    extra_color_green = 0.0;
+    extra_color_blue = 0.0;
+}
 
 void pelotitasExtrasAnimacion(double t, float x, float y, float z, float radio)
 {
@@ -1075,26 +1099,6 @@ void dibujarNave(double t)
     {
         pelotitasExtrasAnimacion(glutGet(GLUT_ELAPSED_TIME) / 1000.0, 1, 0 , 0.25, 0.5);
     }
-    if(key_state['z'] == true)
-    {
-        glRotated(-15,1,0,0);
-    }
-    if(key_state['x'] == true)
-    {
-        glRotated(15,1,0,0);
-    }
-    if(key_state[GLUT_KEY_LEFT] == true)
-    {
-        glRotated(15,0,0,1);
-    }
-    if(key_state[GLUT_KEY_RIGHT] == true)
-    {
-        glRotated(-15,0,0,1);
-    }
-    if(key_state[GLUT_KEY_DOWN] == true)
-    {
-        glRotated(15,0,1,0);
-    }
     dibujarObjeto(nave, 0.015f);
 
     glPopMatrix();
@@ -1429,6 +1433,7 @@ void keyboard (unsigned char key, int x, int y)
                 switch(iterador_menu)
                 {
                 case 1:
+                    inicializarJuego();
                     show_menu = 0;
                     break;
                 case 2:
@@ -1438,6 +1443,9 @@ void keyboard (unsigned char key, int x, int y)
                     exit(1);
                     break;
                 }
+            }else if(game_over == 1){
+                game_over = 0;
+                show_menu = 1;
             }
         }
         break;
@@ -1472,7 +1480,7 @@ void update_func()
         {
         case 0:
             // Juego
-            rotZ += 1;
+            rotZ -= 1;
             break;
         case 1:
             break;
@@ -1488,7 +1496,7 @@ void update_func()
         {
         case 0:
             // Juego
-            rotZ -= 1;
+            rotZ += 1;
             break;
         case 1:
             break;

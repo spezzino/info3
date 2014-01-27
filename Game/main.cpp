@@ -719,7 +719,8 @@ void init(void)
     }
 }
 
-void inicializarJuego(){
+void inicializarJuego()
+{
     rotZ = 0.0f; // Rotate screen on z axis
     posX = 0.0f; //posicion del vehiculo eje X
     posY = 0.0f; //posicion del vehiculo eje Y
@@ -1099,6 +1100,27 @@ void dibujarNave(double t)
     {
         pelotitasExtrasAnimacion(glutGet(GLUT_ELAPSED_TIME) / 1000.0, 1, 0 , 0.25, 0.5);
     }
+    if(key_state['z'] == true)
+    {
+        glRotated(-15,1,0,0);
+    }
+    if(key_state['x'] == true)
+    {
+        glRotated(15,1,0,0);
+    }
+    if(key_state[GLUT_KEY_LEFT] == true)
+    {
+        glRotated(15,0,0,1);
+    }
+    if(key_state[GLUT_KEY_RIGHT] == true)
+    {
+        glRotated(-15,0,0,1);
+    }
+    if(key_state[GLUT_KEY_DOWN] == true)
+    {
+        glRotated(15,0,1,0);
+    }
+
     dibujarObjeto(nave, 0.015f);
 
     glPopMatrix();
@@ -1443,7 +1465,9 @@ void keyboard (unsigned char key, int x, int y)
                     exit(1);
                     break;
                 }
-            }else if(game_over == 1){
+            }
+            else if(game_over == 1)
+            {
                 game_over = 0;
                 show_menu = 1;
             }

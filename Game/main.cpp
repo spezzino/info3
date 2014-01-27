@@ -688,7 +688,7 @@ void init(void)
     }
 
     //help_text=LoadBitmap("image_menu\\text-help.bmp");
-    help_text=LoadBitmap("image_menu\\gameOver.bmp");
+    help_text=LoadBitmap("image_menu\\text-help.bmp");
     // If the last function returns -1 it means the file was not found so we exit from the program
     if (help_text==-1)
     {

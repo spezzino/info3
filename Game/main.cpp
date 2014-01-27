@@ -178,14 +178,14 @@ plane planeEquation(geoPoint a, geoPoint b, geoPoint c)
     geoPoint rab = {b.x - a.x, b.y - a.y, b.z - a.z};
     geoPoint rac = {c.x - a.x, c.y - a.y, c.z - a.z};
     geoPoint n = { (rab.y * rac.z) - (rab.z * rac.y),
-                   (rab.x * rac.z) - (rab.z * rac.x),
+                   -((rab.x * rac.z) - (rab.z * rac.x)),
                    (rab.x * rac.y) - (rab.y * rac.x)
                  };
 
     //geoPoint negN = {-n.x, -n.y, -n.z};
 
     //plane p = {negN.x, negN.y, negN.z, (negN.x * -p1.x) + (negN.y * -p1.y) + (negN.z * -p1.z)};
-    plane p = {n.x, n.y, n.z, ( (n.x * -a.x) + (n.y * -a.y) + (n.z * -a.z) )};
+    plane p = {n.x, n.y, n.z, -( (n.x * a.x) + (n.y * a.y) + (n.z * a.z) )};
 
     return p;
 }
@@ -251,10 +251,15 @@ pointsObject square2d(float x, float y, float z, float angle, GLint textura_id)
 {
 
     //cargar los puntos con las coordenadas reales luego de la rotacion
-    geoPoint p1 = {getXrel(x,-y,angle),getYrel(x,-y,angle),0};
-    geoPoint p2 = {getXrel(x,-y,angle),getYrel(x,-y,angle),z};
-    geoPoint p3 = {getXrel(x,y,angle),getYrel(x,y,angle),z};
-    geoPoint p4 = {getXrel(x,y,angle),getYrel(x,y,angle),0};
+    float xRel12 = getXrel(x,-y,angle);
+    float xRel34 = getXrel(x,y,angle);
+    float yRel12 = getYrel(x,-y,angle);
+    float yRel34 = getYrel(x,y,angle);
+
+    geoPoint p1 = {xRel12,yRel12,0};
+    geoPoint p2 = {xRel12,yRel12,z};
+    geoPoint p3 = {xRel34,yRel34,z};
+    geoPoint p4 = {xRel34,yRel34,0};
 
     glEnable(GL_TEXTURE_2D);
     // Muro
@@ -289,28 +294,31 @@ pointsObject square2d(float x, float y, float z, float angle, GLint textura_id)
         {
             if(!(distp2p0 > distp2p3 || distp3p0 > distp2p3))
             {
-                if(DEBUG)
+                if(distp2p0 < TAM_CUADRILATERO || distp2p0 < TAM_CUADRILATERO || distp2p3 < TAM_CUADRILATERO)
                 {
-                    glColor3d(1,0,0);
-                    sprintf(textBuffer, "crash %d", glutGet(GLUT_ELAPSED_TIME));
-                    drawString(textBuffer, -5,-5,4.8);
-                }
-                if(crashTime == 0)
-                {
-                    //has crashed!!
-                    if(vidas_jugador == 0)
+                    if(DEBUG)
                     {
-                        soundManager.playExplotionSound();
-                        endGame();
+                        glColor3d(1,0,0);
+                        sprintf(textBuffer, "crash %d", glutGet(GLUT_ELAPSED_TIME));
+                        drawString(textBuffer, -5,-5,4.8);
                     }
-                    else
+                    if(crashTime == 0)
                     {
-                        soundManager.playCrashSound();
+                        //has crashed!!
+                        if(vidas_jugador == 0)
+                        {
+                            soundManager.playExplotionSound();
+                            endGame();
+                        }
+                        else
+                        {
+                            soundManager.playCrashSound();
+                        }
+                        crashTime = glutGet(GLUT_ELAPSED_TIME);
+                        vidas_jugador--;
+                        printf("crashTime: %d\ndist: %.2f\ndistp2p0: %.2f\ndistp3p0: %.2f\ndistp2p3: %.2f\n",
+                               crashTime, dist, distp2p0, distp3p0, distp2p3);
                     }
-                    crashTime = glutGet(GLUT_ELAPSED_TIME);
-                    vidas_jugador--;
-                    printf("crashTime: %d\ndist: %.2f\ndistp2p0: %.2f\ndistp3p0: %.2f\ndistp2p3: %.2f\n",
-                           crashTime, dist, distp2p0, distp3p0, distp2p3);
                 }
             }
         }
@@ -474,6 +482,22 @@ void tableroUsuario()
         glEnd();
         glDisable(GL_TEXTURE_2D);
         glPopMatrix();
+        int multiplicador_x = 1;
+        int multiplicador_y = 1;
+        if (posX < 0)
+        {
+            multiplicador_x = -1;
+        }
+        if (posY < 0)
+        {
+            multiplicador_y = -1;
+        }
+        float x_tablero = posX + (multiplicador_x *2.0f);
+        float y_tablero = posY + (multiplicador_y * 1.0f);
+        float z_tablero = 0.5f;
+        float x_inc = 0.0f;
+        float y_inc = 0.0f;
+        float z_inc = 0.2f;
 
         glColor3d(1,0,0);
         sprintf(textBuffer, "%d", puntos_jugador);
@@ -1335,6 +1359,11 @@ void keyboard (unsigned char key, int x, int y)
 {
     switch (key)     // x,X,y,Y,z,Z uses the glRotatef() function
     {
+    case 'd':
+        if(DEBUG){
+            radioObstaculo1 -= velocidad_paredes;
+        }
+        break;
     case 'c':
         changeCamera();
         break;

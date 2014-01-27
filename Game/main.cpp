@@ -21,6 +21,7 @@ float fps = 0; //  Number of frames per second
 int currentTime = 0, previousTime = 0; //  currentTime - previousTime is the time elapsed between every call of the Idle function
 
 int show_menu = 1; //1 se muestra el menu principal, 0 empieza el juego
+int game_over = 0;
 
 GLfloat rotZ = 0.0f; // Rotate screen on z axis
 GLfloat posX = 0.0f; //posicion del vehiculo eje X
@@ -212,6 +213,7 @@ void drawGeoPoint(float x, float y, float z)
 
 void endGame()
 {
+    camera = 0;
     //TODO
     glColor3d(1,0,0);
 
@@ -243,6 +245,7 @@ void endGame()
     glDisable(GL_TEXTURE_2D);
 
     glPopMatrix();
+
     sprintf(textBuffer, "%d", puntos_jugador);
     drawString(textBuffer,1,-5,3);
 }
@@ -308,7 +311,7 @@ pointsObject square2d(float x, float y, float z, float angle, GLint textura_id)
                         if(vidas_jugador == 0)
                         {
                             soundManager.playExplotionSound();
-                            endGame();
+                            game_over = 1;
                         }
                         else
                         {
@@ -1123,7 +1126,7 @@ void dibujarHorizonte(float x, float y, float z, GLint imagen)
     }
     if (camera == 1)
     {
-float inc_x = 13.0f;
+        float inc_x = 13.0f;
         float inc_y = 20.0f;
         float z_base = 0.0f;
         float z_tope = 6.3f;
@@ -1188,14 +1191,16 @@ void display(void)
         drawString(textBuffer, 0,0,6.8);
     }
 
-    if(show_menu == 0)  //modo juego
+    if(game_over)
+    {
+        endGame();
+    }
+    else if(show_menu == 0)   //modo juego
     {
         soundManager.stopMenuMusic();
         soundManager.playGameMusic();
 
         reducirAnguloEntre0y360();
-
-
 
         glPushMatrix();
         glRotatef(rotZ,0.0,0.0,1.0);
@@ -1249,6 +1254,7 @@ void display(void)
     else   //modo menu
     {
         menu();
+
     }
 
     glutSwapBuffers();
@@ -1360,7 +1366,8 @@ void keyboard (unsigned char key, int x, int y)
     switch (key)     // x,X,y,Y,z,Z uses the glRotatef() function
     {
     case 'd':
-        if(DEBUG){
+        if(DEBUG)
+        {
             radioObstaculo1 -= velocidad_paredes;
         }
         break;
@@ -1387,10 +1394,10 @@ void keyboard (unsigned char key, int x, int y)
             show_menu = 0;
         }
         break;
-    case 27:
+    case 27: //escape
         exit(1);
         break;
-    case 13:
+    case 13: //enter
         if (show_menu == 1 && mostrar_ayuda == 1)
         {
             mostrar_ayuda = 0;

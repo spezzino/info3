@@ -33,6 +33,9 @@ int multiplier; //multiplicador del puntaje
 
 char textBuffer[30];
 
+float flote = 0;
+int mult = 1;
+
 GLfloat velocidad_movil;
 GLfloat velocidad_paredes;
 
@@ -52,7 +55,7 @@ int extra_activo = 0;
 int tiempo_extra_activo = 0;
 int bandera_extra_activo = 0;
 int invensibilidad = 0;
-int vidas_jugador = 1;
+int vidas_jugador = 3;
 int puntos_jugador = 0;
 
 float tiempo_inicio = 0.0f;
@@ -146,9 +149,13 @@ void cargarImagenMenu(int imagen);
 
 void changeCamera()
 {
-    if(camera == 1)
+    camera++;
+    if(camera == 3)
     {
         camera = 0;
+    }
+    if(camera == 0)
+    {
         glViewport (0, 0, (GLsizei) ANCHO_VENTANA, (GLsizei) ALTO_VENTANA); // Set the viewport
         glMatrixMode (GL_PROJECTION); // Set the Matrix mode
         glLoadIdentity();
@@ -156,17 +163,6 @@ void changeCamera()
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
         gluLookAt ( 0, -15, 8, 0, 0, 0, 0,0,1);
-    }
-    else
-    {
-        camera = 1;
-        glViewport (0, 0, (GLsizei) ANCHO_VENTANA, (GLsizei) ALTO_VENTANA); // Set the viewport
-        glMatrixMode (GL_PROJECTION); // Set the Matrix mode
-        glLoadIdentity();
-        gluPerspective(50, (GLfloat) ANCHO_VENTANA /(GLfloat) ALTO_VENTANA , 0.10, MAX_VIEW_DISTANCE);
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-        gluLookAt ( posX, posY-0.5, posX, posY, 1, 1, 0,0,1);
     }
 }
 
@@ -218,55 +214,58 @@ void drawGeoPoint(float x, float y, float z)
 
 void endGame()
 {
-    if (camera == 1){
-            changeCamera();
-    }else{
-
-    //TODO
-    glColor3d(1,0,0);
-
-    float x = 11.5f;
-    float y = 4.0f;
-    float z = 7.5f;
-
-
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D,gameOver);
-
-    //glRotated(180,0,0,1);
-    glPushMatrix();
-    glBegin(GL_QUADS);
-
-
-    glTexCoord2f(0.0,0.0);
-    glVertex3f(-x,-y, -z);
-
-    glTexCoord2f(0.0,1.0);
-    glVertex3f(-x,y,z);
-
-    glTexCoord2f(1.0,1.0);
-    glVertex3f(x,y,z);
-
-    glTexCoord2f(1.0,0.0);
-    glVertex3f(x,-y, -z);
-
-    glEnd();
-    glDisable(GL_TEXTURE_2D);
-
-    glPopMatrix();
-
-    sprintf(textBuffer, "%d", puntos_jugador);
-    drawString(textBuffer,1,-5,3);
-
-    if (bandera_toma_tiempo == 0)
+    if (camera == 1 || camera == 2)
     {
-        tiempo_juego = (glutGet(GLUT_ELAPSED_TIME) / 1000.0) - tiempo_inicio;
-        bandera_toma_tiempo = 1;
+        changeCamera();
     }
+    else
+    {
+
+        //TODO
+        glColor3d(1,0,0);
+
+        float x = 11.5f;
+        float y = 4.0f;
+        float z = 7.5f;
 
 
-    sprintf(textBuffer, "%.0f sec.", tiempo_juego);
-    drawString(textBuffer,1,-5,2);
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D,gameOver);
+
+        //glRotated(180,0,0,1);
+        glPushMatrix();
+        glBegin(GL_QUADS);
+
+
+        glTexCoord2f(0.0,0.0);
+        glVertex3f(-x,-y, -z);
+
+        glTexCoord2f(0.0,1.0);
+        glVertex3f(-x,y,z);
+
+        glTexCoord2f(1.0,1.0);
+        glVertex3f(x,y,z);
+
+        glTexCoord2f(1.0,0.0);
+        glVertex3f(x,-y, -z);
+
+        glEnd();
+        glDisable(GL_TEXTURE_2D);
+
+        glPopMatrix();
+
+        sprintf(textBuffer, "%d", puntos_jugador);
+        drawString(textBuffer,1,-5,3);
+
+        if (bandera_toma_tiempo == 0)
+        {
+            tiempo_juego = (glutGet(GLUT_ELAPSED_TIME) / 1000.0) - tiempo_inicio;
+            bandera_toma_tiempo = 1;
+        }
+
+
+        sprintf(textBuffer, "%.0f sec.", tiempo_juego);
+        drawString(textBuffer,1,-5,2);
     }
 }
 
@@ -478,7 +477,7 @@ void tableroUsuario()
         sprintf(textBuffer, "%d", vidas_jugador);
         drawString(textBuffer,X_CAMARA + 0.7,Y_CAMARA + 1.5, Z_CAMARA - 1.76);
     }
-    if (camera == 1)
+    if (camera == 1 || camera == 2)
     {
         float inc_x = 13.0f;
         float inc_y = 20.0f;
@@ -757,7 +756,7 @@ void inicializarJuego()
     radioObstaculo2 = 40;
     radioObstaculo3 = 60;
 
-    vidas_jugador = 1;
+    vidas_jugador = 3;
     velocidad_movil = 0.1f;
     velocidad_paredes = 0.1f;
 
@@ -1118,7 +1117,19 @@ void dibujarNave(double t)
         sprintf(textBuffer, "(%.2f,%.2f,0)",posX,posY);
         drawString(textBuffer, posX, posY, 2);
     }
-    glTranslated(posX,posY,0.2);
+
+    if(flote > 0.2)
+    {
+        mult = -1;
+    }
+    else if (flote<0)
+    {
+        mult = 1;
+    }
+    flote += 0.01*mult;
+    printf("flote: %.2f\nmult: %d\n", flote, mult);
+
+    glTranslated(posX,posY,flote);
     glRotated(90,0,0,1);
     if (bandera_extra_activo == 1)
     {
@@ -1157,7 +1168,17 @@ void dibujarNave(double t)
         gluPerspective(50, (GLfloat) ANCHO_VENTANA /(GLfloat) ALTO_VENTANA , 0.10, MAX_VIEW_DISTANCE);
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
-        gluLookAt ( posX, posY-0.5, 1, posX, posY, 1, 0,0,1);
+        gluLookAt ( posX, posY-0.5, 0.8+flote, posX, posY, 0.8+flote, 0,0,1);
+    }
+    if(camera == 2)
+    {
+        glViewport (0, 0, (GLsizei) ANCHO_VENTANA, (GLsizei) ALTO_VENTANA); // Set the viewport
+        glMatrixMode (GL_PROJECTION); // Set the Matrix mode
+        glLoadIdentity();
+        gluPerspective(50, (GLfloat) ANCHO_VENTANA /(GLfloat) ALTO_VENTANA , 0.10, MAX_VIEW_DISTANCE);
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        gluLookAt ( posX, posY, 1+flote, posX, posY+0.5, 1+flote, 0,0,1);
     }
 
 
@@ -1194,7 +1215,7 @@ void dibujarHorizonte(float x, float y, float z, GLint imagen)
         glDisable(GL_TEXTURE_2D);
         glPopMatrix();
     }
-    if (camera == 1)
+    if (camera == 1 || camera == 2)
     {
         float inc_x = 13.0f;
         float inc_y = 20.0f;

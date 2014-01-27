@@ -1048,6 +1048,26 @@ void dibujarNave(double t)
     {
         pelotitasExtrasAnimacion(glutGet(GLUT_ELAPSED_TIME) / 1000.0, 1, 0 , 0.25, 0.5);
     }
+    if(key_state['z'] == true)
+    {
+        glRotated(-15,1,0,0);
+    }
+    if(key_state['x'] == true)
+    {
+        glRotated(15,1,0,0);
+    }
+    if(key_state[GLUT_KEY_LEFT] == true)
+    {
+        glRotated(15,0,0,1);
+    }
+    if(key_state[GLUT_KEY_RIGHT] == true)
+    {
+        glRotated(-15,0,0,1);
+    }
+    if(key_state[GLUT_KEY_DOWN] == true)
+    {
+        glRotated(15,0,1,0);
+    }
     dibujarObjeto(nave, 0.015f);
 
     glPopMatrix();
@@ -1416,7 +1436,7 @@ void update_func()
         {
         case 0:
             // Juego
-            rotZ -= 1;
+            rotZ += 1;
             break;
         case 1:
             break;
@@ -1432,7 +1452,7 @@ void update_func()
         {
         case 0:
             // Juego
-            rotZ += 1;
+            rotZ -= 1;
             break;
         case 1:
             break;

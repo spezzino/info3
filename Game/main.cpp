@@ -417,27 +417,37 @@ void tableroUsuario()
     }
     if (camera == 1)
     {
-        int multiplicador_x = 1;
-        int multiplicador_y = 1;
-        if (posX < 0){
-            multiplicador_x = -1;
-        }
-        if (posY < 0){
-            multiplicador_y = -1;
-        }
-        float x_tablero = posX + (multiplicador_x *2.0f);
-        float y_tablero = posY + (multiplicador_y * 1.0f);
-        float z_tablero = 0.5f;
-        float x_inc = 0.0f;
-        float y_inc = 0.0f;
-        float z_inc = 0.2f;
+        float inc_x = 13.0f;
+        float inc_y = 20.0f;
+        float z_base = 6.3f;
+        float z_tope = 11.0f;
 
-        dibujarTablero(tablero, x_tablero, y_tablero, z_tablero, x_inc, y_inc , z_inc);
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D,tablero);
+        glPushMatrix();
+        glBegin(GL_QUADS);
+
+        glTexCoord2f(0.0,0.0);
+        glVertex3f(posX - inc_x , posY + inc_y , z_base);
+
+        glTexCoord2f(0.0,1.0);
+        glVertex3f(posX - inc_x , posY + inc_y ,z_tope);
+
+        glTexCoord2f(1.0,1.0);
+        glVertex3f(posX + inc_x  , posY + inc_y  , z_tope);
+
+        glTexCoord2f(1.0,0.0);
+        glVertex3f( posX + inc_x  , posY + inc_y , z_base);
+
+        glEnd();
+        glDisable(GL_TEXTURE_2D);
+        glPopMatrix();
+
         glColor3d(1,0,0);
         sprintf(textBuffer, "%d", puntos_jugador);
-        drawString(textBuffer,posX-5,y_tablero - 0.5, 9);
+        drawString(textBuffer,posX-4,posY + 19.5, 9);
         sprintf(textBuffer, "%d", vidas_jugador);
-        drawString(textBuffer,posX + 5,y_tablero - 0.5, 9);
+        drawString(textBuffer,posX + 7,posY + 19.5, 9);
     }
 
 }
@@ -1048,21 +1058,28 @@ void dibujarHorizonte(float x, float y, float z, GLint imagen)
     }
     if (camera == 1)
     {
-        x += abs(posX);
-        y += abs(posY);
+float inc_x = 13.0f;
+        float inc_y = 20.0f;
+        float z_base = 0.0f;
+        float z_tope = 6.3f;
 
         glEnable(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D,imagen);
         glPushMatrix();
         glBegin(GL_QUADS);
+
         glTexCoord2f(0.0,0.0);
-        glVertex3f(-x, y, 0.0);
+        glVertex3f(posX - inc_x , posY + inc_y , z_base);
+
         glTexCoord2f(0.0,1.0);
-        glVertex3f(-x,y, z);
+        glVertex3f(posX - inc_x , posY + inc_y ,z_tope);
+
         glTexCoord2f(1.0,1.0);
-        glVertex3f(x,y, z);
+        glVertex3f(posX + inc_x  , posY + inc_y  , z_tope);
+
         glTexCoord2f(1.0,0.0);
-        glVertex3f(x,y, 0.0);
+        glVertex3f( posX + inc_x  , posY + inc_y , z_base);
+
         glEnd();
         glDisable(GL_TEXTURE_2D);
         glPopMatrix();
